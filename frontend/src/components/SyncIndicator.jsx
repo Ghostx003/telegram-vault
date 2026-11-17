@@ -12,7 +12,7 @@ export function SyncIndicator({ syncData }) {
   if (progress?.status === 'error') {
     return (
       <div className="bg-rose-950/80 border-b border-rose-500/30 px-4 py-2.5 text-xs text-rose-300">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="w-full flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0" />
             <span>Sync failed: {progress.errorMessage || 'Unknown error occurred'}</span>
@@ -24,7 +24,7 @@ export function SyncIndicator({ syncData }) {
 
   return (
     <div className="bg-gradient-to-r from-neutral-900 via-neutral-900 to-rose-950/60 border-b border-rose-500/20 px-4 py-2 text-xs text-neutral-300 transition-all">
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div className="w-full flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <RefreshCw className="w-4 h-4 text-rose-400 animate-spin flex-shrink-0" />
           <span className="font-semibold text-white">Synchronizing Channel:</span>

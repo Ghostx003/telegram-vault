@@ -337,8 +337,8 @@ export function App() {
       {/* Sync Live Progress Banner */}
       <SyncIndicator syncData={syncData} />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-[1750px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      {/* Main Content Area - Full width edge-to-edge */}
+      <main className="flex-1 w-full px-3 sm:px-6 lg:px-8 xl:px-10 pt-6">
         {activeTab === 'home' && (
           <Home
             featuredVideo={featuredVideo}
