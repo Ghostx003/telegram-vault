@@ -30,7 +30,7 @@ export function FilterBar({
   const [customDurationInput, setCustomDurationInput] = useState(durationMinutes || '15');
   const [showCustomDaysField, setShowCustomDaysField] = useState(dateFilter === 'custom');
   const [showCustomDurationField, setShowCustomDurationField] = useState(
-    durationMinutes && ![10, 20, 30].includes(durationMinutes)
+    durationMinutes && ![1, 5, 10, 20, 30].includes(durationMinutes)
   );
 
   const sortOptions = [
@@ -54,7 +54,7 @@ export function FilterBar({
     { id: 'custom', label: 'Custom Days' },
   ];
 
-  const durationPresets = [10, 20, 30];
+  const durationPresets = [1, 5, 10, 20, 30];
 
   const handleDateSelect = (id) => {
     if (id === 'custom') {
@@ -194,8 +194,8 @@ export function FilterBar({
           <div className="flex items-center p-0.5 bg-neutral-950 rounded-lg border border-neutral-800">
             <button
               onClick={() => onDurationModeChange('any')}
-              className={`px-2.5 py-0.5 rounded text-[11px] font-medium transition-all ${
-                durationMode === 'any' ? 'bg-neutral-800 text-white' : 'text-neutral-400 hover:text-white'
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
+                durationMode === 'any' ? 'bg-neutral-800 text-white font-bold' : 'text-neutral-400 hover:text-white'
               }`}
             >
               Any
@@ -205,8 +205,8 @@ export function FilterBar({
                 onDurationModeChange('longer');
                 if (!durationMinutes) onDurationMinutesChange(10);
               }}
-              className={`px-2.5 py-0.5 rounded text-[11px] font-medium transition-all ${
-                durationMode === 'longer' ? 'bg-rose-600 text-white' : 'text-neutral-400 hover:text-white'
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
+                durationMode === 'longer' ? 'bg-rose-600 text-white font-bold shadow-sm' : 'text-neutral-400 hover:text-white'
               }`}
             >
               Longer than (&gt;)
@@ -216,8 +216,8 @@ export function FilterBar({
                 onDurationModeChange('shorter');
                 if (!durationMinutes) onDurationMinutesChange(10);
               }}
-              className={`px-2.5 py-0.5 rounded text-[11px] font-medium transition-all ${
-                durationMode === 'shorter' ? 'bg-rose-600 text-white' : 'text-neutral-400 hover:text-white'
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
+                durationMode === 'shorter' ? 'bg-rose-600 text-white font-bold shadow-sm' : 'text-neutral-400 hover:text-white'
               }`}
             >
               Shorter than (&lt;)

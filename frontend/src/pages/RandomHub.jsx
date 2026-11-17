@@ -202,25 +202,6 @@ export function RandomHub({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Toggle Avoid Repetition */}
-            <button
-              onClick={() => setAvoidRepetition(!avoidRepetition)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-semibold transition-all ${
-                avoidRepetition
-                  ? isVideos
-                    ? 'bg-rose-950/40 border-rose-500/50 text-rose-300 shadow-sm'
-                    : 'bg-amber-950/40 border-amber-500/50 text-amber-300 shadow-sm'
-                  : 'bg-neutral-950/80 border-neutral-800 text-neutral-400 hover:text-white'
-              }`}
-            >
-              <span className={`w-2.5 h-2.5 rounded-full ${
-                avoidRepetition 
-                  ? (isVideos ? 'bg-rose-500 animate-pulse' : 'bg-amber-500 animate-pulse')
-                  : 'bg-neutral-600'
-              }`} />
-              <span>{avoidRepetition ? 'Avoid Repetition: Active' : 'Avoid Repetition: Off'}</span>
-            </button>
-
             {/* Reset Session */}
             {currentPlayedCount > 0 && (
               <button

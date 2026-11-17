@@ -53,7 +53,7 @@ router.get('/', (req, res) => {
       params.push(minDuration);
     }
     if (maxDuration !== null && !isNaN(maxDuration) && maxDuration > 0) {
-      whereClauses.push('duration <= ?');
+      whereClauses.push('duration > 0 AND duration <= ?');
       params.push(maxDuration);
     }
 

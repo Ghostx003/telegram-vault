@@ -19,7 +19,6 @@ import {
   Info,
   Clock,
   HardDrive,
-  Zap,
   FastForward,
   Rewind,
   Smartphone,
@@ -51,7 +50,6 @@ export function VideoPlayerModal({
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [hoverTime, setHoverTime] = useState(null);
   const [hoverPosition, setHoverPosition] = useState(0);
   const [captionExpanded, setCaptionExpanded] = useState(false);
@@ -59,11 +57,9 @@ export function VideoPlayerModal({
   const [isBuffering, setIsBuffering] = useState(true);
 
   // Mobile & Netflix Gesture States
-  const [is2xActive, setIs2xActive] = useState(false);
   const [coverNotch, setCoverNotch] = useState(true);
   const [swipeSeek, setSwipeSeek] = useState({ active: false, delta: 0, targetTime: 0 });
   const [swipeVertical, setSwipeVertical] = useState({ active: false, dy: 0 });
-  const [feedbackOverlay, setFeedbackOverlay] = useState(null); // '2x' | 'fullscreen' | null
   const [isStarred, setIsStarred] = useState(Boolean(video?.is_starred));
 
   useEffect(() => {
@@ -82,8 +78,7 @@ export function VideoPlayerModal({
   };
 
   // Gesture Tracking Refs
-  const longPressTimerRef = useRef(null);
-  const prevRateRef = useRef(1);
+  const isTouchInteractionRef = useRef(false);
   const touchStartRef = useRef({ x: 0, y: 0, time: 0, videoTime: 0 });
   const gestureLockedRef = useRef(null); // 'seek' | 'vertical' | null
   const wasGestureRef = useRef(false);
@@ -198,7 +193,13 @@ export function VideoPlayerModal({
     if (!videoRef.current) return;
     videoRef.current.playbackRate = speed;
     setPlaybackSpeed(speed);
-    setShowSpeedMenu(false);
+  };
+
+  const cyclePlaybackSpeed = () => {
+    const speeds = [1, 1.25, 1.5, 1.75, 2];
+    const currentIndex = speeds.indexOf(playbackSpeed);
+    const nextSpeed = currentIndex !== -1 ? speeds[(currentIndex + 1) % speeds.length] : 1;
+    changeSpeed(nextSpeed);
   };
 
   // Toggle Fullscreen with Landscape Lock for Phone Notch Coverage
@@ -327,11 +328,13 @@ export function VideoPlayerModal({
   };
 
   // -------------------------------------------------------------
-  // MOBILE GESTURES: TAP & HOLD (2X), DOUBLE TAP (FULLSCREEN), 
-  // SWIPE SEEK (LEFT/RIGHT), SWIPE SWITCH (UP/DOWN)
+  // GESTURES: DOUBLE TAP / DBLCLICK (FULLSCREEN), 
+  // SWIPE SEEK (LEFT/RIGHT), SWIPE SWITCH (UP/DOWN),
+  // CLICK ON VIDEO (PLAY/PAUSE RESUME)
   // -------------------------------------------------------------
   
   const handleTouchStart = (e) => {
+    isTouchInteractionRef.current = true;
     const touch = e.touches[0];
     touchStartRef.current = {
       x: touch.clientX,
@@ -341,17 +344,6 @@ export function VideoPlayerModal({
     };
     gestureLockedRef.current = null;
     wasGestureRef.current = false;
-
-    // Start 250ms long-press timer for 2X playback speed!
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = setTimeout(() => {
-      if (!gestureLockedRef.current && videoRef.current) {
-        prevRateRef.current = videoRef.current.playbackRate;
-        videoRef.current.playbackRate = 2.0;
-        setIs2xActive(true);
-        wasGestureRef.current = true;
-      }
-    }, 250);
   };
 
   const handleTouchMove = (e) => {
@@ -360,25 +352,14 @@ export function VideoPlayerModal({
     const dx = touch.clientX - touchStartRef.current.x;
     const dy = touch.clientY - touchStartRef.current.y;
 
-    // If holding 2X, don't lock into swipe unless moved significantly
-    if (is2xActive) {
-      if (Math.abs(dx) > 40 || Math.abs(dy) > 40) {
-        if (videoRef.current) videoRef.current.playbackRate = prevRateRef.current || 1.0;
-        setIs2xActive(false);
-      }
-      return;
-    }
-
     // Determine gesture
     if (!gestureLockedRef.current) {
       if (Math.abs(dx) > 15 && Math.abs(dx) > Math.abs(dy)) {
         // Horizontal Drag -> Netflix-style Seek!
-        if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
         gestureLockedRef.current = 'seek';
         wasGestureRef.current = true;
       } else if (Math.abs(dy) > 20 && Math.abs(dy) > Math.abs(dx)) {
         // Vertical Drag -> Next Random Video!
-        if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
         gestureLockedRef.current = 'vertical';
         wasGestureRef.current = true;
       }
@@ -399,16 +380,6 @@ export function VideoPlayerModal({
   };
 
   const handleTouchEnd = () => {
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-
-    // Release 2X Speed
-    if (is2xActive) {
-      if (videoRef.current) videoRef.current.playbackRate = prevRateRef.current || 1.0;
-      setIs2xActive(false);
-      wasGestureRef.current = true;
-      return;
-    }
-
     // Finish Horizontal Seek
     if (gestureLockedRef.current === 'seek') {
       if (swipeSeek.active) {
@@ -432,7 +403,7 @@ export function VideoPlayerModal({
     // Handle Tap vs Double Tap
     if (!wasGestureRef.current) {
       const now = Date.now();
-      if (now - lastTapRef.current < 320) {
+      if (now - lastTapRef.current < 300) {
         // DOUBLE TAP -> Fullscreen & Landscape (Cover Notch!)
         if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
         toggleFullscreen(true);
@@ -443,29 +414,21 @@ export function VideoPlayerModal({
         singleTapTimerRef.current = setTimeout(() => {
           togglePlay();
           setShowControls(prev => !prev);
-        }, 320);
+        }, 250);
       }
     }
   };
 
-  // Mouse fallback for tap-and-hold 2x on desktop
-  const handleMouseDown = () => {
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = setTimeout(() => {
-      if (videoRef.current) {
-        prevRateRef.current = videoRef.current.playbackRate;
-        videoRef.current.playbackRate = 2.0;
-        setIs2xActive(true);
-      }
-    }, 280);
-  };
-
-  const handleMouseUp = () => {
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-    if (is2xActive) {
-      if (videoRef.current) videoRef.current.playbackRate = prevRateRef.current || 1.0;
-      setIs2xActive(false);
+  // Click on the video area toggles play/pause immediately on desktop!
+  const handleVideoAreaClick = (e) => {
+    if (isTouchInteractionRef.current) {
+      isTouchInteractionRef.current = false;
+      return;
     }
+    if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) {
+      return;
+    }
+    togglePlay();
   };
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -476,7 +439,7 @@ export function VideoPlayerModal({
         ref={containerRef}
         onMouseMove={handleMouseMove}
         onWheel={handleWheel}
-        className="relative w-full h-full max-w-7xl max-h-screen flex flex-col justify-between bg-black select-none overflow-hidden"
+        className="relative w-full h-full max-h-screen flex flex-col justify-between bg-black select-none overflow-hidden"
       >
         
         {/* Top Header Bar */}
@@ -570,15 +533,17 @@ export function VideoPlayerModal({
           </div>
         </div>
 
-        {/* Video Element & Central Play Area with Touch Gestures */}
+        {/* Video Element & Central Play Area with Click & Touch Gestures */}
         <div 
+          onClick={handleVideoAreaClick}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onTouchCancel={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onDoubleClick={() => toggleFullscreen(true)}
+          onDoubleClick={(e) => {
+            e.stopPropagation();
+            toggleFullscreen(true);
+          }}
           onContextMenu={(e) => e.preventDefault()}
           className="relative flex-1 flex items-center justify-center cursor-pointer w-full h-full touch-none select-none overflow-hidden"
         >
@@ -624,15 +589,6 @@ export function VideoPlayerModal({
             </div>
           )}
 
-          {/* ⚡ TAP & HOLD: 2X SPEED HUD OVERLAY */}
-          {is2xActive && (
-            <div className="absolute top-20 inset-x-0 flex justify-center z-40 pointer-events-none animate-fadeIn">
-              <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-600/95 text-white font-black text-sm shadow-2xl shadow-rose-950/80 backdrop-blur-md border border-rose-400/50 animate-pulse">
-                <Zap className="w-4 h-4 fill-current text-yellow-300" />
-                <span>2X SPEED (Holding)</span>
-              </div>
-            </div>
-          )}
 
           {/* ⏩ NETFLIX-STYLE SWIPE SEEK HUD OVERLAY */}
           {swipeSeek.active && (
@@ -778,40 +734,14 @@ export function VideoPlayerModal({
 
               {/* Right Side Options */}
               <div className="flex items-center gap-2">
-                {/* Mobile Gesture Hints (Desktop / Mobile Friendly) */}
-                <div className="hidden md:flex items-center gap-2 text-[11px] text-neutral-400 font-mono bg-neutral-900/80 px-3 py-1 rounded-xl border border-neutral-800">
-                  <span>Hold for 2X</span>
-                  <span>•</span>
-                  <span>Swipe to Seek</span>
-                  <span>•</span>
-                  <span>Swipe Up for Next</span>
-                </div>
-
-                {/* Speed Selector Menu */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-                    className="px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-800 transition-colors"
-                  >
-                    {playbackSpeed}x
-                  </button>
-
-                  {showSpeedMenu && (
-                    <div className="absolute bottom-full right-0 mb-2 py-1 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl z-40 w-24">
-                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => changeSpeed(s)}
-                          className={`w-full px-3 py-1 text-left text-xs font-mono hover:bg-neutral-800 transition-colors ${
-                            playbackSpeed === s ? 'text-rose-400 font-bold' : 'text-neutral-300'
-                          }`}
-                        >
-                          {s}x
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                {/* Direct Speed Cycling Button (1x -> 1.25x -> 1.5x -> 1.75x -> 2x -> 1x) */}
+                <button
+                  onClick={cyclePlaybackSpeed}
+                  className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-neutral-900 hover:bg-neutral-800 text-rose-400 hover:text-white border border-neutral-800 hover:border-rose-500/50 transition-all active:scale-95 shadow-sm"
+                  title="Click to cycle playback speed (1x → 1.25x → 1.5x → 1.75x → 2x)"
+                >
+                  {playbackSpeed}x
+                </button>
 
                 {/* Toggle Notch Coverage */}
                 {isFullscreen && (

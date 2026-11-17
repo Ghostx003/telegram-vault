@@ -22,15 +22,7 @@ export function formatDate(timestamp) {
 }
 
 export function formatFullDate(timestamp) {
-  if (!timestamp) return '';
-  const date = new Date(timestamp * 1000);
-  return date.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatDate(timestamp);
 }
 
 export function formatRelativeTime(timestamp) {

@@ -107,9 +107,10 @@ async function main() {
   💡 PORT ASSIGNED: ${port} (Available port selected automatically)
 
 ----------------------------------------------------------------------
-  📱 MOBILE & NETFLIX GESTURES:
-     • Tap & Hold on Video : 2X Playback Speed (Release to restore)
-     • Double-Tap on Video : Fullscreen & Landscape (Covers Notch)
+  📱 TOUCH & DESKTOP CONTROLS:
+     • Click on Video      : Instant Play / Pause (Resume)
+     • Speed Button (1x)   : Instant Cycle (1x → 1.25x → 1.5x → 1.75x → 2x)
+     • Double-Click / Tap  : Fullscreen & Landscape (Covers Notch)
      • Swipe Left / Right  : Fast Scrub & Seek Forward / Backward
      • Swipe Up / Down     : Switch to a Brand New Random Video
      • Mouse Wheel Scroll  : Instant Photo / Video Switching
