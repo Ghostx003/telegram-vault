@@ -50,6 +50,10 @@ export function VideoPlayerModal({
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const showControlsRef = useRef(showControls);
+  useEffect(() => {
+    showControlsRef.current = showControls;
+  }, [showControls]);
   const [hoverTime, setHoverTime] = useState(null);
   const [hoverPosition, setHoverPosition] = useState(0);
   const [captionExpanded, setCaptionExpanded] = useState(false);
@@ -108,6 +112,16 @@ export function VideoPlayerModal({
     }
   }, [video.telegram_message_id]);
 
+  // Initial controls auto-hide after 2.5s on video load
+  useEffect(() => {
+    setShowControls(true);
+    scheduleControlsHide();
+    return () => {
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
+    };
+  }, [video?.telegram_message_id, scheduleControlsHide]);
+
   // Handle Fullscreen Changes
   useEffect(() => {
     const handleFsChange = () => {
@@ -136,16 +150,28 @@ export function VideoPlayerModal({
     }
   };
 
+  const scheduleControlsHide = useCallback(() => {
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = setTimeout(() => {
+      if (videoRef.current && !videoRef.current.paused && !swipeSeek.active && !swipeVertical.active) {
+        setShowControls(false);
+      }
+    }, 2500); // exactly 2.5 seconds as requested
+  }, [swipeSeek.active, swipeVertical.active]);
+
   const togglePlay = useCallback(() => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
       videoRef.current.play().catch(e => console.warn('Play error:', e));
       setIsPlaying(true);
+      scheduleControlsHide();
     } else {
       videoRef.current.pause();
       setIsPlaying(false);
+      setShowControls(true);
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     }
-  }, []);
+  }, [scheduleControlsHide]);
 
   const seek = (time) => {
     if (!videoRef.current) return;
@@ -318,13 +344,11 @@ export function VideoPlayerModal({
 
   // Controls auto-hide on inactivity
   const handleMouseMove = () => {
-    setShowControls(true);
-    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-    controlsTimeoutRef.current = setTimeout(() => {
-      if (isPlaying && !swipeSeek.active && !swipeVertical.active && !is2xActive) {
-        setShowControls(false);
-      }
-    }, 3000);
+    if (isTouchInteractionRef.current) return;
+    if (!showControlsRef.current) {
+      setShowControls(true);
+    }
+    scheduleControlsHide();
   };
 
   // -------------------------------------------------------------
@@ -408,27 +432,44 @@ export function VideoPlayerModal({
         if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
         toggleFullscreen(true);
       } else {
-        // SINGLE TAP -> Toggle Controls & Play/Pause
+        // SINGLE TAP:
+        // 1st press (controls hidden): show player and auto-hide after 2.5s
+        // 2nd press (controls visible): pause / resume playback
         lastTapRef.current = now;
         if (singleTapTimerRef.current) clearTimeout(singleTapTimerRef.current);
         singleTapTimerRef.current = setTimeout(() => {
-          togglePlay();
-          setShowControls(prev => !prev);
+          if (!showControlsRef.current) {
+            setShowControls(true);
+            scheduleControlsHide();
+          } else {
+            togglePlay();
+          }
         }, 250);
       }
     }
+
+    setTimeout(() => {
+      isTouchInteractionRef.current = false;
+    }, 400);
   };
 
-  // Click on the video area toggles play/pause immediately on desktop!
+  // Click on the video area:
+  // 1st click when controls are hidden: show player controls for 2.5s
+  // 2nd click when controls are visible: pause / resume playback
   const handleVideoAreaClick = (e) => {
     if (isTouchInteractionRef.current) {
-      isTouchInteractionRef.current = false;
       return;
     }
     if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) {
       return;
     }
-    togglePlay();
+
+    if (!showControlsRef.current) {
+      setShowControls(true);
+      scheduleControlsHide();
+    } else {
+      togglePlay();
+    }
   };
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -545,23 +586,36 @@ export function VideoPlayerModal({
             toggleFullscreen(true);
           }}
           onContextMenu={(e) => e.preventDefault()}
-          className="relative flex-1 flex items-center justify-center cursor-pointer w-full h-full touch-none select-none overflow-hidden"
+          className={`relative flex-1 flex items-center justify-center w-full h-full touch-none select-none overflow-hidden ${
+            !showControls && isPlaying ? 'cursor-none' : 'cursor-pointer'
+          }`}
         >
           <video
             ref={videoRef}
             src={streamUrl}
             autoPlay
             playsInline
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
+            onPlay={() => {
+              setIsPlaying(true);
+              scheduleControlsHide();
+            }}
+            onPause={() => {
+              setIsPlaying(false);
+              setShowControls(true);
+              if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+            }}
             onTimeUpdate={handleTimeUpdate}
             onWaiting={() => setIsBuffering(true)}
-            onPlaying={() => setIsBuffering(false)}
+            onPlaying={() => {
+              setIsBuffering(false);
+              scheduleControlsHide();
+            }}
             onLoadedMetadata={() => {
               if (videoRef.current && videoRef.current.duration) {
                 setDuration(videoRef.current.duration);
               }
               setIsBuffering(false);
+              scheduleControlsHide();
             }}
             onEnded={() => {
               if (onNextRandomVideo) onNextRandomVideo();
