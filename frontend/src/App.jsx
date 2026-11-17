@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Navbar } from './components/Navbar';
-import { MobileBottomNav } from './components/MobileBottomNav';
-import { MobileMenuDrawer } from './components/MobileMenuDrawer';
 import { SyncIndicator } from './components/SyncIndicator';
 import { AuthModal } from './components/AuthModal';
 import { ChannelSwitcherModal } from './components/ChannelSwitcherModal';
@@ -29,7 +27,6 @@ export function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
   const [isClearCacheModalOpen, setIsClearCacheModalOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Channels state
   const [channels, setChannels] = useState([]);
