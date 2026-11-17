@@ -94,10 +94,11 @@ export const api = {
     });
     return fetchJson(`/photos?${searchParams.toString()}`);
   },
-  getRandomPhoto: (excludeIds = [], channelId = null) => {
+  getRandomPhoto: (excludeIds = [], channelId = null, count = 1) => {
     const params = new URLSearchParams();
     if (excludeIds.length > 0) params.set('excludeIds', excludeIds.join(','));
     if (channelId) params.set('channel_id', channelId);
+    if (count > 1) params.set('count', count);
     const q = params.toString() ? `?${params.toString()}` : '';
     return fetchJson(`/photos/random${q}`);
   },

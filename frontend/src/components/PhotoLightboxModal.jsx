@@ -328,14 +328,14 @@ export function PhotoLightboxModal({
       {/* Main Image Container */}
       <div className="relative flex-1 flex items-center justify-center p-4 sm:p-12 w-full h-full overflow-hidden">
         
-        {/* Instant Low-Res Thumbnail Placeholder with subtle blur */}
+        {/* Instant Visible Thumbnail Preview */}
         {api.getThumbnailUrl(photo.telegram_message_id) && (
           <img
             src={api.getThumbnailUrl(photo.telegram_message_id)}
             alt=""
             aria-hidden="true"
-            className={`absolute max-w-full max-h-[85vh] object-contain filter blur-md transition-opacity duration-300 pointer-events-none ${
-              isImageLoading ? 'opacity-40 scale-100' : 'opacity-0 scale-95'
+            className={`absolute max-w-full max-h-[85vh] object-contain transition-opacity duration-200 pointer-events-none ${
+              isImageLoading ? 'opacity-100 scale-100' : 'opacity-0 scale-98'
             }`}
           />
         )}
@@ -351,54 +351,56 @@ export function PhotoLightboxModal({
             setImgError(true);
           }}
           style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s ease-out' }}
-          className={`relative z-10 max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl drop-shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-all duration-300 ${
-            isImageLoading ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
+          className={`relative z-10 max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl drop-shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-opacity duration-200 ${
+            isImageLoading ? 'opacity-0' : 'opacity-100'
           }`}
         />
 
-        {/* CIRCULAR LOADER WHEN NEXT PHOTO IS BEING LOADED */}
+        {/* FLOATING CIRCULAR LOADER WHEN NEXT PHOTO IS BEING PREPARED */}
         {(isImageLoading || isFetchingNext) && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/55 backdrop-blur-md pointer-events-none transition-all duration-200 animate-fadeIn">
-            <div className="relative flex items-center justify-center">
-              {/* Outer Glowing Pulsing Amber Aura */}
-              <div className="absolute w-28 h-28 rounded-full bg-amber-500/25 blur-xl animate-pulse" />
-              
-              {/* Circular Spinning Ring SVG */}
-              <svg className="w-16 h-16 animate-spin text-amber-500 drop-shadow-[0_0_20px_rgba(245,158,11,0.6)]" viewBox="0 0 50 50">
-                <circle
-                  className="opacity-20"
-                  cx="25"
-                  cy="25"
-                  r="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <circle
-                  className="opacity-100"
-                  cx="25"
-                  cy="25"
-                  r="20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  strokeDasharray="95, 150"
-                  strokeLinecap="round"
-                />
-              </svg>
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none transition-all duration-200 animate-fadeIn">
+            <div className="flex flex-col items-center justify-center p-5 sm:p-6 rounded-3xl bg-neutral-950/85 border border-amber-500/40 shadow-2xl shadow-black/80 backdrop-blur-md">
+              <div className="relative flex items-center justify-center">
+                {/* Outer Glowing Pulsing Amber Aura */}
+                <div className="absolute w-24 h-24 rounded-full bg-amber-500/25 blur-xl animate-pulse" />
+                
+                {/* Circular Spinning Ring SVG */}
+                <svg className="w-14 h-14 animate-spin text-amber-500 drop-shadow-[0_0_20px_rgba(245,158,11,0.6)]" viewBox="0 0 50 50">
+                  <circle
+                    className="opacity-20"
+                    cx="25"
+                    cy="25"
+                    r="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <circle
+                    className="opacity-100"
+                    cx="25"
+                    cy="25"
+                    r="20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeDasharray="95, 150"
+                    strokeLinecap="round"
+                  />
+                </svg>
 
-              {/* Centered Surprise Icon */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Dices className="w-6 h-6 text-amber-300 animate-spin-slow" />
+                {/* Centered Surprise Icon */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Dices className="w-5 h-5 text-amber-300 animate-spin-slow" />
+                </div>
               </div>
-            </div>
 
-            {/* Status Pill Badge */}
-            <div className="mt-5 flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-neutral-900/95 border border-amber-500/40 shadow-2xl shadow-amber-950/60 backdrop-blur-md">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
-              <span className="text-xs font-mono font-bold text-amber-200 tracking-wider uppercase">
-                Loading Next Surprise Photo...
-              </span>
+              {/* Status Pill Badge */}
+              <div className="mt-4 flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-neutral-900/90 border border-amber-500/30">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                <span className="text-[11px] font-mono font-bold text-amber-200 tracking-wider uppercase">
+                  Loading Next Surprise Photo...
+                </span>
+              </div>
             </div>
           </div>
         )}

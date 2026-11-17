@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 const config = require('../config');
+const cacheService = require('../services/cache');
 
 function getActiveChannelId(req) {
   if (req.query.channel_id) return req.query.channel_id;
@@ -124,6 +125,16 @@ router.get('/random', (req, res) => {
         baseParams.push(channelId);
       }
       items = db.all(`SELECT * FROM media WHERE ${baseWhere} ORDER BY RANDOM() LIMIT ?`, [...baseParams, count]);
+    }
+
+    // Server-side instant pre-caching: Asynchronously fetch and cache high-res photos on disk
+    if (items && items.length > 0) {
+      for (const it of items) {
+        if (it?.telegram_message_id) {
+          cacheService.getOrFetchPhoto(it.telegram_message_id, it.channel_id).catch(() => {});
+          cacheService.getOrFetchThumbnail(it.telegram_message_id, it.channel_id).catch(() => {});
+        }
+      }
     }
 
     res.json({
