@@ -71,7 +71,7 @@ export function VideoPlayerModal({
       const next = !isStarred;
       setIsStarred(next);
       if (video) video.is_starred = next ? 1 : 0;
-      await api.toggleStar(video.telegram_message_id);
+      await api.toggleStar(video.id || video.telegram_message_id, video.channel_id);
     } catch (e) {
       console.warn('Star toggle error:', e);
     }

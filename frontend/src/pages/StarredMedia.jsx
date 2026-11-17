@@ -14,9 +14,35 @@ export function StarredMedia({
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+  const [counts, setCounts] = useState({ videos: 0, photos: 0 });
 
   const observerTargetRef = useRef(null);
   const isVideos = mediaType === 'videos';
+
+  // Load Starred counts across all channels
+  const refreshCounts = useCallback(async () => {
+    try {
+      const [vRes, pRes] = await Promise.all([
+        api.getVideos({ limit: 1, starred: 'true', channel_id: 'all' }).catch(() => ({ pagination: { total: 0 } })),
+        api.getPhotos({ limit: 1, starred: 'true', channel_id: 'all' }).catch(() => ({ pagination: { total: 0 } })),
+      ]);
+      const vCount = vRes?.pagination?.total || 0;
+      const pCount = pRes?.pagination?.total || 0;
+      setCounts({ videos: vCount, photos: pCount });
+      return { videos: vCount, photos: pCount };
+    } catch (e) {
+      return { videos: 0, photos: 0 };
+    }
+  }, []);
+
+  // Initial mount: check counts and auto-pick tab with content if one is empty
+  useEffect(() => {
+    refreshCounts().then(({ videos, photos }) => {
+      if (videos === 0 && photos > 0) {
+        setMediaType('photos');
+      }
+    });
+  }, [refreshCounts]);
 
   const loadStarred = useCallback(async (isLoadMore = false, targetPage = 1) => {
     try {
@@ -32,7 +58,8 @@ export function StarredMedia({
         page: targetPage,
         limit: 24,
         sort: 'newest',
-        starred: 'true'
+        starred: 'true',
+        channel_id: 'all'
       });
 
       if (isLoadMore) {
@@ -53,6 +80,23 @@ export function StarredMedia({
     setPage(1);
     loadStarred(false, 1);
   }, [loadStarred]);
+
+  // Remove card immediately if unstarred by user
+  const handleItemStarChange = (changedItem, isStarredNow) => {
+    if (!isStarredNow) {
+      setItems(prev => prev.filter(i => (i.id ? i.id !== changedItem.id : i.telegram_message_id !== changedItem.telegram_message_id)));
+      setPagination(prev => ({
+        ...prev,
+        total: Math.max(0, prev.total - 1)
+      }));
+      setCounts(prev => ({
+        ...prev,
+        [isVideos ? 'videos' : 'photos']: Math.max(0, prev[isVideos ? 'videos' : 'photos'] - 1)
+      }));
+    } else {
+      refreshCounts();
+    }
+  };
 
   const handleLoadMore = useCallback(() => {
     if (page < pagination.totalPages && !loading && !loadingMore) {
@@ -93,8 +137,15 @@ export function StarredMedia({
             <Star className="w-6 h-6 fill-current" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Starred Media</h1>
-            <p className="text-xs text-neutral-400">Your favorite bookmarked videos and photographs</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+              <span>Starred Media</span>
+              {pagination.total > 0 && (
+                <span className="text-xs font-mono font-normal px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  {pagination.total} {isVideos ? (pagination.total === 1 ? 'video' : 'videos') : (pagination.total === 1 ? 'photo' : 'photos')}
+                </span>
+              )}
+            </h1>
+            <p className="text-xs text-neutral-400">Only your starred favorite videos and photographs are displayed here</p>
           </div>
         </div>
 
@@ -102,7 +153,7 @@ export function StarredMedia({
         <div className="flex items-center p-1.5 bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl">
           <button
             onClick={() => setMediaType('videos')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
               isVideos
                 ? 'bg-gradient-to-r from-rose-600 to-rose-700 text-white shadow-lg shadow-rose-950/50 scale-[1.02]'
                 : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
@@ -110,11 +161,18 @@ export function StarredMedia({
           >
             <Film className="w-4 h-4" />
             <span>Starred Videos</span>
+            {counts.videos > 0 && (
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+                isVideos ? 'bg-white/25 text-white font-bold' : 'bg-neutral-800 text-neutral-300'
+              }`}>
+                {counts.videos}
+              </span>
+            )}
           </button>
           
           <button
             onClick={() => setMediaType('photos')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
               !isVideos
                 ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg shadow-amber-950/50 scale-[1.02]'
                 : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
@@ -122,6 +180,13 @@ export function StarredMedia({
           >
             <ImageIcon className="w-4 h-4" />
             <span>Starred Photos</span>
+            {counts.photos > 0 && (
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+                !isVideos ? 'bg-white/25 text-white font-bold' : 'bg-neutral-800 text-neutral-300'
+              }`}>
+                {counts.photos}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -147,6 +212,7 @@ export function StarredMedia({
               item={item}
               onPlayVideo={onPlayVideo}
               onViewPhoto={onViewPhoto}
+              onStarChange={handleItemStarChange}
             />
           ))}
         </div>
@@ -159,7 +225,7 @@ export function StarredMedia({
             No Starred {isVideos ? 'Videos' : 'Photos'} Yet
           </h3>
           <p className="text-xs text-neutral-400 leading-relaxed">
-            While streaming any video or browsing photos, tap the <span className="text-amber-400 font-semibold">⭐ Star</span> button in the player or viewer to save your favorites here for quick access!
+            While browsing or playing media, click the <span className="text-amber-400 font-semibold">⭐ Star</span> button on any card or player to save your favorites here for quick access!
           </p>
         </div>
       ) : null}

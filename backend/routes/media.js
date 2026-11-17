@@ -37,8 +37,9 @@ router.get('/:id/status', (req, res) => {
 // POST /api/media/:id/star (Toggle Star / Favorite)
 router.post('/:id/star', (req, res) => {
   try {
-    const messageId = parseInt(req.params.id, 10);
-    const isStarred = db.toggleStar(messageId);
+    const idOrMsgId = parseInt(req.params.id, 10);
+    const channelId = req.query.channel_id || req.body?.channel_id;
+    const isStarred = db.toggleStar(idOrMsgId, channelId);
     if (isStarred === null) {
       return res.status(404).json({ success: false, error: 'Media not found' });
     }

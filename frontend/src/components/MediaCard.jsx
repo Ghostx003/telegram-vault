@@ -1,11 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Image as ImageIcon, Film, Eye, Calendar, Sparkles, Maximize2, Star } from 'lucide-react';
 import { api } from '../api/client';
 import { formatDuration, formatRelativeTime, formatFullDate, truncateText } from '../utils/formatters';
 
-export function MediaCard({ item, onPlayVideo, onViewPhoto, isHighlighted = false }) {
+export function MediaCard({ item, onPlayVideo, onViewPhoto, onStarChange, isHighlighted = false }) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [isStarred, setIsStarred] = useState(Boolean(item.is_starred));
+
+  useEffect(() => {
+    setIsStarred(Boolean(item.is_starred));
+  }, [item.id, item.telegram_message_id, item.is_starred]);
+
+  const handleToggleStar = async () => {
+    const next = !isStarred;
+    setIsStarred(next);
+    item.is_starred = next ? 1 : 0;
+    try {
+      await api.toggleStar(item.id || item.telegram_message_id, item.channel_id);
+      if (onStarChange) onStarChange(item, next);
+    } catch (e) {
+      console.warn('Star toggle error:', e);
+      setIsStarred(!next);
+      item.is_starred = !next ? 1 : 0;
+    }
+  };
 
   const isVideo = item.media_type === 'video';
   const thumbUrl = api.getThumbnailUrl(item.telegram_message_id);
@@ -116,12 +135,21 @@ export function MediaCard({ item, onPlayVideo, onViewPhoto, isHighlighted = fals
           </div>
         )}
 
-        {/* Starred Badge */}
-        {Boolean(item.is_starred) && (
-          <div className="absolute top-2.5 right-2.5 z-20 p-1.5 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/40 text-amber-400 shadow-md">
-            <Star className="w-3.5 h-3.5 fill-amber-400" />
-          </div>
-        )}
+        {/* Quick Star / Unstar Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleStar();
+          }}
+          className={`absolute top-2.5 right-2.5 z-30 p-2 rounded-full backdrop-blur-md transition-all duration-200 cursor-pointer ${
+            isStarred
+              ? 'bg-black/80 border border-amber-500/60 text-amber-400 opacity-100 shadow-lg shadow-amber-950/60 scale-105'
+              : 'bg-black/60 hover:bg-black/90 border border-white/20 text-neutral-400 hover:text-amber-400 opacity-0 group-hover:opacity-100'
+          }`}
+          title={isStarred ? "Remove from Starred" : "Star this item"}
+        >
+          <Star className={`w-3.5 h-3.5 transition-transform active:scale-125 ${isStarred ? 'fill-amber-400 text-amber-400' : 'text-current'}`} />
+        </button>
 
         {/* Duration / Resolution Badge */}
         <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 z-20">

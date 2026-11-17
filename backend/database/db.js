@@ -254,16 +254,44 @@ const dbHelper = {
   },
 
   // Star / Favorite Media Helpers
-  toggleStar(messageId) {
-    const item = this.get('SELECT is_starred FROM media WHERE telegram_message_id = ? LIMIT 1', [messageId]);
+  toggleStar(idOrMsgId, channelId = null) {
+    let item = null;
+    // 1. Try matching by channel_id and telegram_message_id
+    if (channelId) {
+      item = this.get('SELECT id, is_starred FROM media WHERE telegram_message_id = ? AND channel_id = ? LIMIT 1', [idOrMsgId, channelId]);
+    }
+    // 2. Try matching by primary key id
+    if (!item) {
+      item = this.get('SELECT id, is_starred FROM media WHERE id = ? LIMIT 1', [idOrMsgId]);
+    }
+    // 3. Try matching by active channel + telegram_message_id
+    if (!item) {
+      const active = this.getActiveChannel();
+      if (active?.id) {
+        item = this.get('SELECT id, is_starred FROM media WHERE telegram_message_id = ? AND channel_id = ? LIMIT 1', [idOrMsgId, active.id]);
+      }
+    }
+    // 4. Fallback to telegram_message_id alone
+    if (!item) {
+      item = this.get('SELECT id, is_starred FROM media WHERE telegram_message_id = ? LIMIT 1', [idOrMsgId]);
+    }
     if (!item) return null;
     const nextState = item.is_starred ? 0 : 1;
-    this.run('UPDATE media SET is_starred = ? WHERE telegram_message_id = ?', [nextState, messageId]);
+    this.run('UPDATE media SET is_starred = ? WHERE id = ?', [nextState, item.id]);
     return Boolean(nextState);
   },
 
-  isStarred(messageId) {
-    const item = this.get('SELECT is_starred FROM media WHERE telegram_message_id = ? LIMIT 1', [messageId]);
+  isStarred(idOrMsgId, channelId = null) {
+    let item = null;
+    if (channelId) {
+      item = this.get('SELECT is_starred FROM media WHERE telegram_message_id = ? AND channel_id = ? LIMIT 1', [idOrMsgId, channelId]);
+    }
+    if (!item) {
+      item = this.get('SELECT is_starred FROM media WHERE id = ? LIMIT 1', [idOrMsgId]);
+    }
+    if (!item) {
+      item = this.get('SELECT is_starred FROM media WHERE telegram_message_id = ? LIMIT 1', [idOrMsgId]);
+    }
     return Boolean(item?.is_starred);
   }
 };

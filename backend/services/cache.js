@@ -356,12 +356,18 @@ class CacheService {
   // Delete physical video file when video player is closed
   deleteVideoCache(messageId) {
     try {
-      const files = fs.readdirSync(this.videosDir);
-      for (const f of files) {
-        if (f.startsWith(`${messageId}.`)) {
-          const fullPath = path.join(this.videosDir, f);
-          fs.unlinkSync(fullPath);
-          console.log(`[Cache] Deleted physical video cache: ${fullPath}`);
+      if (fs.existsSync(this.videosDir)) {
+        const files = fs.readdirSync(this.videosDir);
+        for (const f of files) {
+          if (f.startsWith(`${messageId}.`) || f.includes(`_${messageId}.`) || f.includes(`_${messageId}_`)) {
+            const fullPath = path.join(this.videosDir, f);
+            try {
+              fs.unlinkSync(fullPath);
+              console.log(`[Cache] Deleted physical video cache: ${fullPath}`);
+            } catch (unlinkErr) {
+              console.warn(`[Cache] Could not unlink ${fullPath}:`, unlinkErr.message);
+            }
+          }
         }
       }
       db.run('UPDATE media SET local_cache_path = NULL WHERE telegram_message_id = ?', [messageId]);

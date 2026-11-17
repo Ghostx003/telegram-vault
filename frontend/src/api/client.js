@@ -112,7 +112,10 @@ export const api = {
   getMediaStatus: (id) => fetchJson(`/media/${id}/status`),
   recordView: (id) => fetchJson(`/media/${id}/view`, { method: 'POST' }),
   cleanupMedia: (id) => fetchJson(`/media/${id}/cleanup`, { method: 'POST' }),
-  toggleStar: (id) => fetchJson(`/media/${id}/star`, { method: 'POST' }),
+  toggleStar: (id, channelId = null) => {
+    const q = channelId ? `?channel_id=${channelId}` : '';
+    return fetchJson(`/media/${id}/star${q}`, { method: 'POST' });
+  },
 
   // Cache Management
   clearCache: (category = 'all') => fetchJson('/media/cache/clear', {

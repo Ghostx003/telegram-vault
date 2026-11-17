@@ -53,7 +53,7 @@ export function PhotoLightboxModal({
       const next = !isStarred;
       setIsStarred(next);
       if (photo) photo.is_starred = next ? 1 : 0;
-      await api.toggleStar(photo.telegram_message_id);
+      await api.toggleStar(photo.id || photo.telegram_message_id, photo.channel_id);
     } catch (e) {
       console.warn('Star toggle error:', e);
     }
