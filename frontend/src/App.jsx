@@ -13,6 +13,7 @@ import { Photos } from './pages/Photos';
 import { RandomHub } from './pages/RandomHub';
 import { RecentlyAdded } from './pages/RecentlyAdded';
 import { StarredMedia } from './pages/StarredMedia';
+import { Dices } from 'lucide-react';
 
 import { useTelegramAuth } from './hooks/useTelegramAuth';
 import { useSync } from './hooks/useSync';
@@ -34,6 +35,7 @@ export function App() {
   // Active media viewer state
   const [activeVideo, setActiveVideo] = useState(null);
   const [activePhoto, setActivePhoto] = useState(null);
+  const [isOpeningRandomPhoto, setIsOpeningRandomPhoto] = useState(false);
 
   // Photo viewer mode: 'random' | 'sequential'
   const [photoViewerMode, setPhotoViewerMode] = useState('sequential');
@@ -227,6 +229,9 @@ export function App() {
 
   const handleOpenRandomPhoto = async () => {
     try {
+      if (!activePhoto) {
+        setIsOpeningRandomPhoto(true);
+      }
       const rand = await fetchNextRandomPhoto();
       if (rand) {
         setPhotoViewerMode('random');
@@ -236,6 +241,8 @@ export function App() {
       }
     } catch (e) {
       console.warn('Could not fetch random photo:', e);
+    } finally {
+      setIsOpeningRandomPhoto(false);
     }
   };
 
@@ -408,6 +415,28 @@ export function App() {
           avoidRepetition={avoidRepetition}
           playedCount={playedVideoCount}
         />
+      )}
+
+      {/* Instant Circular Loader when launching Surprise Me photo from outside lightbox */}
+      {isOpeningRandomPhoto && !activePhoto && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-xl animate-fadeIn pointer-events-none">
+          <div className="relative flex items-center justify-center">
+            <div className="absolute w-28 h-28 rounded-full bg-amber-500/25 blur-xl animate-pulse" />
+            <svg className="w-16 h-16 animate-spin text-amber-500 drop-shadow-[0_0_20px_rgba(245,158,11,0.6)]" viewBox="0 0 50 50">
+              <circle className="opacity-20" cx="25" cy="25" r="20" fill="none" stroke="currentColor" strokeWidth="4" />
+              <circle className="opacity-100" cx="25" cy="25" r="20" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray="95, 150" strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Dices className="w-6 h-6 text-amber-300 animate-spin-slow" />
+            </div>
+          </div>
+          <div className="mt-5 flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-neutral-900/95 border border-amber-500/40 shadow-2xl backdrop-blur-md">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+            <span className="text-xs font-mono font-bold text-amber-200 tracking-wider uppercase">
+              Loading Next Surprise Photo...
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Photo Lightbox Modal */}

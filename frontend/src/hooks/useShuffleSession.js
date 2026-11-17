@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api/client';
 
 const VIDEO_SHUFFLE_KEY = 'tg_media_video_shuffle_session';
@@ -33,6 +33,9 @@ export function useShuffleSession() {
     }
   });
 
+  const prefetchedPhotoRef = useRef(null);
+  const isPrefetchingPhotoRef = useRef(false);
+
   const setAvoidRepetition = (val) => {
     setAvoidRepetitionState(val);
     try {
@@ -64,6 +67,33 @@ export function useShuffleSession() {
     });
   }, []);
 
+  // Background pre-fetcher for lightning-fast next photo response
+  const prefetchNextPhoto = useCallback(async (customExcludes) => {
+    if (isPrefetchingPhotoRef.current) return;
+    try {
+      isPrefetchingPhotoRef.current = true;
+      const exclude = customExcludes !== undefined 
+        ? customExcludes 
+        : (avoidRepetition ? playedPhotoIds : []);
+      const res = await api.getRandomPhoto(exclude);
+      if (res.data) {
+        prefetchedPhotoRef.current = res.data;
+        // Warm browser cache & server disk cache
+        const img = new Image();
+        img.src = api.getPhotoUrl(res.data.telegram_message_id);
+      }
+    } catch (e) {
+      console.warn('Photo prefetch warning:', e);
+    } finally {
+      isPrefetchingPhotoRef.current = false;
+    }
+  }, [avoidRepetition, playedPhotoIds]);
+
+  // Initial prime prefetch on mount
+  useEffect(() => {
+    prefetchNextPhoto();
+  }, [prefetchNextPhoto]);
+
   const resetVideoSession = useCallback(() => {
     setPlayedVideoIds([]);
     try {
@@ -73,17 +103,18 @@ export function useShuffleSession() {
 
   const resetPhotoSession = useCallback(() => {
     setPlayedPhotoIds([]);
+    prefetchedPhotoRef.current = null;
     try {
       localStorage.removeItem(PHOTO_SHUFFLE_KEY);
     } catch (e) {}
-  }, []);
+    prefetchNextPhoto([]);
+  }, [prefetchNextPhoto]);
 
   const fetchNextRandomVideo = useCallback(async () => {
     const exclude = avoidRepetition ? playedVideoIds : [];
     const res = await api.getRandomVideo(exclude);
     if (res.data) {
       if (res.resetSession) {
-        // Pool was exhausted, reset
         resetVideoSession();
       }
       recordVideoPlayed(res.data.telegram_message_id);
@@ -93,17 +124,38 @@ export function useShuffleSession() {
   }, [avoidRepetition, playedVideoIds, recordVideoPlayed, resetVideoSession]);
 
   const fetchNextRandomPhoto = useCallback(async () => {
-    const exclude = avoidRepetition ? playedPhotoIds : [];
-    const res = await api.getRandomPhoto(exclude);
-    if (res.data) {
-      if (res.resetSession) {
-        resetPhotoSession();
+    let chosenPhoto = null;
+
+    // 1. Instant return if pre-fetched buffer is ready!
+    if (prefetchedPhotoRef.current) {
+      chosenPhoto = prefetchedPhotoRef.current;
+      prefetchedPhotoRef.current = null;
+    } else {
+      // 2. Fetch directly from API
+      const exclude = avoidRepetition ? playedPhotoIds : [];
+      const res = await api.getRandomPhoto(exclude);
+      if (res.data) {
+        if (res.resetSession) {
+          resetPhotoSession();
+        }
+        chosenPhoto = res.data;
       }
-      recordPhotoViewed(res.data.telegram_message_id);
-      return res.data;
     }
+
+    if (chosenPhoto) {
+      recordPhotoViewed(chosenPhoto.telegram_message_id);
+      // Immediately queue the NEXT one in background for the next click
+      const nextExcludes = avoidRepetition 
+        ? [...playedPhotoIds, chosenPhoto.telegram_message_id] 
+        : [];
+      setTimeout(() => {
+        prefetchNextPhoto(nextExcludes);
+      }, 50);
+      return chosenPhoto;
+    }
+
     return null;
-  }, [avoidRepetition, playedPhotoIds, recordPhotoViewed, resetPhotoSession]);
+  }, [avoidRepetition, playedPhotoIds, prefetchNextPhoto, recordPhotoViewed, resetPhotoSession]);
 
   return {
     avoidRepetition,
