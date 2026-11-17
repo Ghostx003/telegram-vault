@@ -284,7 +284,7 @@ export function RandomHub({
 
         {/* 4 PHOTOS IN LARGE GRID SHOWING FULL PHOTO */}
         {shuffledItems.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-4.5">
             {shuffledItems.map((item) => (
               <MediaCard
                 key={`${item.media_type}_${item.id}`}

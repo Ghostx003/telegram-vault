@@ -31,7 +31,9 @@ export function MediaCard({ item, onPlayVideo, onViewPhoto, isHighlighted = fals
     >
       {/* Media Thumbnail Container */}
       <div className={`relative w-full bg-neutral-950 overflow-hidden flex items-center justify-center ${
-        isVideo ? 'aspect-video' : 'aspect-[4/5] min-h-[320px] sm:min-h-[360px]'
+        isVideo 
+          ? 'aspect-video' 
+          : 'aspect-square sm:aspect-[4/5] min-h-[380px] sm:min-h-[460px] lg:min-h-[540px]'
       }`}>
         {/* Placeholder skeleton */}
         {!imgLoaded && !imgError && (

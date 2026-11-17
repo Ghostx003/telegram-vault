@@ -64,7 +64,7 @@ export function Navbar({
 
   return (
     <header className="sticky top-0 z-40 bg-neutral-950/85 backdrop-blur-xl border-b border-neutral-800/80 transition-all shadow-lg shadow-black/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-[1750px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
         {/* Logo & Brand & Channel Switcher */}
         <div className="flex items-center gap-3 flex-shrink-0">
