@@ -108,10 +108,19 @@ export const api = {
   },
 
   // Media
-  getMedia: (id) => fetchJson(`/media/${id}`),
-  getMediaStatus: (id) => fetchJson(`/media/${id}/status`),
+  getMedia: (id, channelId = null) => {
+    const q = channelId ? `?channel_id=${channelId}` : '';
+    return fetchJson(`/media/${id}${q}`);
+  },
+  getMediaStatus: (id, channelId = null) => {
+    const q = channelId ? `?channel_id=${channelId}` : '';
+    return fetchJson(`/media/${id}/status${q}`);
+  },
   recordView: (id) => fetchJson(`/media/${id}/view`, { method: 'POST' }),
-  cleanupMedia: (id) => fetchJson(`/media/${id}/cleanup`, { method: 'POST' }),
+  cleanupMedia: (id, channelId = null) => fetchJson(`/media/${id}/cleanup`, { 
+    method: 'POST',
+    body: JSON.stringify({ channel_id: channelId }) 
+  }),
   toggleStar: (id, channelId = null) => {
     const q = channelId ? `?channel_id=${channelId}` : '';
     return fetchJson(`/media/${id}/star${q}`, { method: 'POST' });
@@ -124,9 +133,18 @@ export const api = {
   }),
 
   // URLs for streaming and images
-  getThumbnailUrl: (id) => `${API_BASE}/media/${id}/thumbnail`,
-  getPhotoUrl: (id) => `${API_BASE}/media/${id}/photo`,
-  getVideoStreamUrl: (id) => `${API_BASE}/media/${id}/stream`,
+  getThumbnailUrl: (id, channelId = null) => {
+    const q = channelId ? `?channel_id=${channelId}` : '';
+    return `${API_BASE}/media/${id}/thumbnail${q}`;
+  },
+  getPhotoUrl: (id, channelId = null) => {
+    const q = channelId ? `?channel_id=${channelId}` : '';
+    return `${API_BASE}/media/${id}/photo${q}`;
+  },
+  getVideoStreamUrl: (id, channelId = null) => {
+    const q = channelId ? `?channel_id=${channelId}` : '';
+    return `${API_BASE}/media/${id}/stream${q}`;
+  },
 
   // Stats
   getStats: (channelId = null) => {

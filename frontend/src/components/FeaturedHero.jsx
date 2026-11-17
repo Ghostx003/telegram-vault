@@ -4,7 +4,7 @@ import { api } from '../api/client';
 import { formatDuration, formatDate } from '../utils/formatters';
 
 export function FeaturedHero({ featuredVideo, onPlayVideo, onPlayRandomVideo, counts }) {
-  const thumbUrl = featuredVideo ? api.getThumbnailUrl(featuredVideo.telegram_message_id) : null;
+  const thumbUrl = featuredVideo ? api.getThumbnailUrl(featuredVideo.telegram_message_id, featuredVideo.channel_id) : null;
 
   return (
     <div className="relative w-full rounded-3xl overflow-hidden bg-neutral-950 border border-neutral-800/80 shadow-2xl mb-10 group">

@@ -27,7 +27,7 @@ export function MediaCard({ item, onPlayVideo, onViewPhoto, onStarChange, isHigh
   };
 
   const isVideo = item.media_type === 'video';
-  const thumbUrl = api.getThumbnailUrl(item.telegram_message_id);
+  const thumbUrl = api.getThumbnailUrl(item.telegram_message_id, item.channel_id);
 
   const handleClick = () => {
     if (isVideo) {

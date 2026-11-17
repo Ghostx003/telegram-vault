@@ -33,7 +33,8 @@ export function PhotoLightboxModal({
   const [captionExpanded, setCaptionExpanded] = useState(false);
   const [scrollHintVisible, setScrollHintVisible] = useState(true);
   const [isStarred, setIsStarred] = useState(Boolean(photo?.is_starred));
-  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [fullImageLoaded, setFullImageLoaded] = useState(false);
+  const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
   const [isFetchingNext, setIsFetchingNext] = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -44,7 +45,8 @@ export function PhotoLightboxModal({
   useEffect(() => {
     // Reset zoom and error states when photo changes
     setZoom(1);
-    setIsImageLoading(true);
+    setFullImageLoaded(false);
+    setThumbnailLoaded(false);
     setImgError(false);
   }, [photo?.telegram_message_id]);
 
@@ -75,7 +77,6 @@ export function PhotoLightboxModal({
     if (isFetchingNext) return;
     try {
       setIsFetchingNext(true);
-      setIsImageLoading(true);
       if (onNextRandomPhoto) {
         await onNextRandomPhoto();
       }
@@ -93,7 +94,6 @@ export function PhotoLightboxModal({
     } else if (onNextPhoto) {
       try {
         setIsFetchingNext(true);
-        setIsImageLoading(true);
         await onNextPhoto();
       } catch (e) {
         console.warn('Error fetching next photo:', e);
@@ -108,7 +108,6 @@ export function PhotoLightboxModal({
     if (onPrevPhoto) {
       try {
         setIsFetchingNext(true);
-        setIsImageLoading(true);
         await onPrevPhoto();
       } catch (e) {
         console.warn('Error fetching previous photo:', e);
@@ -189,7 +188,7 @@ export function PhotoLightboxModal({
 
   if (!photo) return null;
 
-  const photoUrl = api.getPhotoUrl(photo.telegram_message_id);
+  const photoUrl = api.getPhotoUrl(photo.telegram_message_id, photo.channel_id);
 
   const handleZoomIn = () => setZoom(prev => Math.min(3, prev + 0.25));
   const handleZoomOut = () => setZoom(prev => Math.max(0.5, prev - 0.25));
@@ -227,6 +226,12 @@ export function PhotoLightboxModal({
                   <span>•</span>
                   <span className="text-amber-400/90">{photo.width} × {photo.height}</span>
                 </>
+              )}
+              {!fullImageLoaded && (
+                <span className="flex items-center gap-1 text-[10px] text-amber-400 font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  Loading HD...
+                </span>
               )}
             </div>
           </div>
@@ -334,8 +339,9 @@ export function PhotoLightboxModal({
             src={api.getThumbnailUrl(photo.telegram_message_id)}
             alt=""
             aria-hidden="true"
-            className={`absolute max-w-full max-h-[85vh] object-contain transition-opacity duration-200 pointer-events-none ${
-              isImageLoading ? 'opacity-100 scale-100' : 'opacity-0 scale-98'
+            onLoad={() => setThumbnailLoaded(true)}
+            className={`absolute max-w-full max-h-[85vh] object-contain transition-opacity duration-300 pointer-events-none ${
+              fullImageLoaded ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
             }`}
           />
         )}
@@ -345,68 +351,28 @@ export function PhotoLightboxModal({
           key={photo.telegram_message_id}
           src={photoUrl}
           alt={photo.caption || 'Telegram photo'}
-          onLoad={() => setIsImageLoading(false)}
+          onLoad={() => {
+            setFullImageLoaded(true);
+          }}
           onError={() => {
-            setIsImageLoading(false);
+            setFullImageLoaded(false);
             setImgError(true);
           }}
           style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s ease-out' }}
-          className={`relative z-10 max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl drop-shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-opacity duration-200 ${
-            isImageLoading ? 'opacity-0' : 'opacity-100'
+          className={`relative z-10 max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl drop-shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-opacity duration-300 ${
+            fullImageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
         />
 
-        {/* FLOATING CIRCULAR LOADER WHEN NEXT PHOTO IS BEING PREPARED */}
-        {(isImageLoading || isFetchingNext) && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none transition-all duration-200 animate-fadeIn">
-            <div className="flex flex-col items-center justify-center p-5 sm:p-6 rounded-3xl bg-neutral-950/85 border border-amber-500/40 shadow-2xl shadow-black/80 backdrop-blur-md">
-              <div className="relative flex items-center justify-center">
-                {/* Outer Glowing Pulsing Amber Aura */}
-                <div className="absolute w-24 h-24 rounded-full bg-amber-500/25 blur-xl animate-pulse" />
-                
-                {/* Circular Spinning Ring SVG */}
-                <svg className="w-14 h-14 animate-spin text-amber-500 drop-shadow-[0_0_20px_rgba(245,158,11,0.6)]" viewBox="0 0 50 50">
-                  <circle
-                    className="opacity-20"
-                    cx="25"
-                    cy="25"
-                    r="20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <circle
-                    className="opacity-100"
-                    cx="25"
-                    cy="25"
-                    r="20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeDasharray="95, 150"
-                    strokeLinecap="round"
-                  />
-                </svg>
-
-                {/* Centered Surprise Icon */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Dices className="w-5 h-5 text-amber-300 animate-spin-slow" />
-                </div>
-              </div>
-
-              {/* Status Pill Badge */}
-              <div className="mt-4 flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-neutral-900/90 border border-amber-500/30">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                <span className="text-[11px] font-mono font-bold text-amber-200 tracking-wider uppercase">
-                  Loading Next Surprise Photo...
-                </span>
-              </div>
-            </div>
+        {/* Subtle circular spinner only if neither thumbnail nor full image has loaded yet */}
+        {!thumbnailLoaded && !fullImageLoaded && !imgError && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+            <div className="w-12 h-12 border-3 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
           </div>
         )}
 
         {/* Error Fallback */}
-        {imgError && !isImageLoading && (
+        {imgError && !fullImageLoaded && !thumbnailLoaded && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 p-6 text-center">
             <AlertCircle className="w-12 h-12 text-rose-500 mb-3" />
             <p className="text-sm font-semibold text-white">Could not load this photograph</p>

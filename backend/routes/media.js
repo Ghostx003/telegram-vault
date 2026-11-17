@@ -114,7 +114,8 @@ router.get('/:id/photo', async (req, res) => {
 // POST /api/media/:id/cleanup (Delete physical video file when closed)
 router.post('/:id/cleanup', (req, res) => {
   const messageId = parseInt(req.params.id, 10);
-  const result = cacheService.deleteVideoCache(messageId);
+  const channelId = req.body?.channel_id || req.query.channel_id || null;
+  const result = cacheService.deleteVideoCache(messageId, channelId);
   res.json({ success: true, ...result });
 });
 
@@ -125,6 +126,15 @@ router.get('/:id/stream', async (req, res) => {
   let item = null;
   if (channelId) {
     item = db.get('SELECT * FROM media WHERE telegram_message_id = ? AND channel_id = ?', [messageId, channelId]);
+  }
+  if (!item) {
+    const active = db.getActiveChannel();
+    if (active?.id) {
+      item = db.get('SELECT * FROM media WHERE telegram_message_id = ? AND channel_id = ?', [messageId, active.id]);
+    }
+  }
+  if (!item) {
+    item = db.get("SELECT * FROM media WHERE telegram_message_id = ? AND media_type = 'video'", [messageId]);
   }
   if (!item) {
     item = db.get('SELECT * FROM media WHERE telegram_message_id = ?', [messageId]);

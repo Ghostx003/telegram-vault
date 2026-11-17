@@ -88,12 +88,12 @@ export function VideoPlayerModal({
 
   if (!video) return null;
 
-  const streamUrl = api.getVideoStreamUrl(video.telegram_message_id);
+  const streamUrl = api.getVideoStreamUrl(video.telegram_message_id, video.channel_id);
 
   // Check cache status
   useEffect(() => {
     if (typeof api.getMediaStatus === 'function') {
-      api.getMediaStatus(video.telegram_message_id)
+      api.getMediaStatus(video.telegram_message_id, video.channel_id)
         .then(res => {
           setVideoStatus(res?.status === 'cached' ? 'cached' : 'streaming');
         })

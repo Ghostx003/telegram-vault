@@ -173,7 +173,7 @@ export function App() {
   const handleCloseVideoPlayer = () => {
     if (activeVideo) {
       // Delete physical video file from disk as requested!
-      api.cleanupMedia(activeVideo.telegram_message_id).catch(() => {});
+      api.cleanupMedia(activeVideo.telegram_message_id, activeVideo.channel_id).catch(() => {});
     }
     setActiveVideo(null);
   };
@@ -190,13 +190,13 @@ export function App() {
   };
 
   const handleNextRandomVideoInPlayer = async () => {
-    const previousId = activeVideo?.telegram_message_id;
+    const previous = activeVideo;
     try {
       const nextRand = await fetchNextRandomVideo();
       if (nextRand) {
         // Cleanup previous video from disk cache
-        if (previousId) {
-          api.cleanupMedia(previousId).catch(() => {});
+        if (previous?.telegram_message_id) {
+          api.cleanupMedia(previous.telegram_message_id, previous.channel_id).catch(() => {});
         }
         handlePlayVideo(nextRand);
       }
@@ -209,7 +209,7 @@ export function App() {
     if (videoHistoryRef.current.length > 1) {
       const current = videoHistoryRef.current.pop();
       if (current) {
-        api.cleanupMedia(current.telegram_message_id).catch(() => {});
+        api.cleanupMedia(current.telegram_message_id, current.channel_id).catch(() => {});
       }
       const prev = videoHistoryRef.current[videoHistoryRef.current.length - 1];
       if (prev) {

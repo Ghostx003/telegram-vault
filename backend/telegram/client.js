@@ -8,6 +8,7 @@ const HARDWIRED_API_HASH = '058d3bd0789eeecaf0dea102b6cc9886';
 
 let client = null;
 let currentSessionString = '';
+let connectingPromise = null;
 
 async function getOrInitClient(forceNew = false) {
   if (client && !forceNew) {
@@ -23,9 +24,10 @@ async function getOrInitClient(forceNew = false) {
   const apiHash = config.telegram.apiHash || db.getSetting('api_hash', HARDWIRED_API_HASH) || HARDWIRED_API_HASH;
 
   client = new TelegramClient(session, apiId, apiHash, {
-    connectionRetries: 5,
+    connectionRetries: 10,
     useWSS: false,
     autoReconnect: true,
+    floodSleepThreshold: 60,
   });
 
   return client;
@@ -33,10 +35,28 @@ async function getOrInitClient(forceNew = false) {
 
 async function connectClient() {
   const c = await getOrInitClient();
-  if (!c.connected) {
-    await c.connect();
+  if (c.connected) {
+    return c;
   }
-  return c;
+
+  if (connectingPromise) {
+    return await connectingPromise;
+  }
+
+  connectingPromise = (async () => {
+    try {
+      if (!c.connected) {
+        await c.connect();
+      }
+    } catch (err) {
+      console.warn('[Telegram] Connection attempt note:', err.message);
+    } finally {
+      connectingPromise = null;
+    }
+    return c;
+  })();
+
+  return await connectingPromise;
 }
 
 async function isAuthorized() {

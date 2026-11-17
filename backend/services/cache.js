@@ -80,8 +80,15 @@ class CacheService {
   async getOrFetchThumbnail(messageId, channelId = null) {
     let effectiveChannelId = channelId;
     if (!effectiveChannelId) {
-      const item = db.get('SELECT channel_id, thumbnail_path FROM media WHERE telegram_message_id = ? LIMIT 1', [messageId]);
-      effectiveChannelId = item?.channel_id || null;
+      const activeChannel = db.getActiveChannel();
+      let item = null;
+      if (activeChannel?.id) {
+        item = db.get('SELECT channel_id, thumbnail_path FROM media WHERE telegram_message_id = ? AND channel_id = ? LIMIT 1', [messageId, activeChannel.id]);
+      }
+      if (!item) {
+        item = db.get('SELECT channel_id, thumbnail_path FROM media WHERE telegram_message_id = ? LIMIT 1', [messageId]);
+      }
+      effectiveChannelId = item?.channel_id || activeChannel?.id || null;
       if (item?.thumbnail_path && fs.existsSync(item.thumbnail_path)) {
         return item.thumbnail_path;
       }
@@ -119,7 +126,7 @@ class CacheService {
         try {
           buffer = await client.downloadMedia(msg.media, { thumb: 0 });
         } catch (err) {
-          if (msg.media.photo) {
+          if (msg.media?.photo) {
             buffer = await client.downloadMedia(msg.media);
           }
         }
@@ -150,8 +157,18 @@ class CacheService {
   async getOrFetchPhoto(messageId, channelId = null) {
     let effectiveChannelId = channelId;
     if (!effectiveChannelId) {
-      const item = db.get('SELECT channel_id, local_cache_path FROM media WHERE telegram_message_id = ? LIMIT 1', [messageId]);
-      effectiveChannelId = item?.channel_id || null;
+      const activeChannel = db.getActiveChannel();
+      let item = null;
+      if (activeChannel?.id) {
+        item = db.get("SELECT channel_id, local_cache_path FROM media WHERE telegram_message_id = ? AND channel_id = ? AND media_type = 'photo' LIMIT 1", [messageId, activeChannel.id]);
+      }
+      if (!item) {
+        item = db.get("SELECT channel_id, local_cache_path FROM media WHERE telegram_message_id = ? AND media_type = 'photo' LIMIT 1", [messageId]);
+      }
+      if (!item) {
+        item = db.get("SELECT channel_id, local_cache_path FROM media WHERE telegram_message_id = ? LIMIT 1", [messageId]);
+      }
+      effectiveChannelId = item?.channel_id || activeChannel?.id || null;
       if (item?.local_cache_path && fs.existsSync(item.local_cache_path)) {
         return item.local_cache_path;
       }
@@ -177,6 +194,16 @@ class CacheService {
       }
 
       const msg = messages[0];
+      const isDocument = msg.media?.document || msg?.document;
+      const mime = isDocument?.mimeType || '';
+
+      // Safety check: if message in Telegram is actually a video or non-image document, do NOT load into RAM!
+      // Return thumbnail instead of downloading hundreds of megabytes into memory!
+      if (isDocument && !mime.startsWith('image/')) {
+        console.warn(`[Cache] Warning: Msg ${messageId} in channel ${effectiveChannelId} is a document (${mime}), not a photo. Serving thumbnail.`);
+        return await this.getOrFetchThumbnail(messageId, effectiveChannelId);
+      }
+
       const tempPath = `${photoPath}.tmp`;
       
       const buffer = await client.downloadMedia(msg.media);
@@ -217,10 +244,10 @@ class CacheService {
 
   // Progressive Instant Video Streaming with HTTP 206 Range support
   async streamVideoProgressive(req, res, messageId, item) {
-    const videoPath = this.getVideoPath(messageId, item.file_name);
+    const videoPath = this.getVideoPath(messageId, item.file_name, item.channel_id);
 
     // Case 1: If full video file already exists on disk, stream from local disk instantly
-    if (this.isVideoCached(messageId, item.file_name)) {
+    if (this.isVideoCached(messageId, item.file_name, item.channel_id)) {
       const stat = fs.statSync(videoPath);
       const fileSize = stat.size;
       const range = req.headers.range;
@@ -354,7 +381,7 @@ class CacheService {
   }
 
   // Delete physical video file when video player is closed
-  deleteVideoCache(messageId) {
+  deleteVideoCache(messageId, channelId = null) {
     try {
       if (fs.existsSync(this.videosDir)) {
         const files = fs.readdirSync(this.videosDir);
@@ -370,7 +397,11 @@ class CacheService {
           }
         }
       }
-      db.run('UPDATE media SET local_cache_path = NULL WHERE telegram_message_id = ?', [messageId]);
+      if (channelId) {
+        db.run('UPDATE media SET local_cache_path = NULL WHERE telegram_message_id = ? AND channel_id = ?', [messageId, channelId]);
+      } else {
+        db.run('UPDATE media SET local_cache_path = NULL WHERE telegram_message_id = ?', [messageId]);
+      }
       return { success: true };
     } catch (err) {
       console.warn(`[Cache] Could not delete video cache for msg ${messageId}:`, err.message);
