@@ -45,6 +45,23 @@ router.get('/', (req, res) => {
       params.push(endDate);
     }
 
+    // Duration filters (longer than / shorter than)
+    const minDuration = req.query.minDuration ? parseInt(req.query.minDuration, 10) : null;
+    const maxDuration = req.query.maxDuration ? parseInt(req.query.maxDuration, 10) : null;
+    if (minDuration !== null && !isNaN(minDuration) && minDuration > 0) {
+      whereClauses.push('duration >= ?');
+      params.push(minDuration);
+    }
+    if (maxDuration !== null && !isNaN(maxDuration) && maxDuration > 0) {
+      whereClauses.push('duration <= ?');
+      params.push(maxDuration);
+    }
+
+    // Starred filter
+    if (req.query.starred === 'true' || req.query.starred === '1') {
+      whereClauses.push('is_starred = 1');
+    }
+
     const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
 
     let orderBy = 'date DESC';

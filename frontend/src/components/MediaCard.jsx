@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Play, Image as ImageIcon, Film, Eye, Calendar, Sparkles, Maximize2 } from 'lucide-react';
+import { Play, Image as ImageIcon, Film, Eye, Calendar, Sparkles, Maximize2, Star } from 'lucide-react';
 import { api } from '../api/client';
-import { formatDuration, formatRelativeTime, truncateText } from '../utils/formatters';
+import { formatDuration, formatRelativeTime, formatFullDate, truncateText } from '../utils/formatters';
 
 export function MediaCard({ item, onPlayVideo, onViewPhoto, isHighlighted = false }) {
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -104,13 +104,20 @@ export function MediaCard({ item, onPlayVideo, onViewPhoto, isHighlighted = fals
           </div>
         </div>
 
-        {/* Featured Badge if highlighted */}
+        {/* Top Badges */}
         {isHighlighted && (
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-20">
             <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-[10px] text-amber-300 font-medium flex items-center gap-0.5 backdrop-blur-md">
               <Sparkles className="w-3 h-3 text-amber-400" />
               Featured
             </span>
+          </div>
+        )}
+
+        {/* Starred Badge */}
+        {Boolean(item.is_starred) && (
+          <div className="absolute top-2.5 right-2.5 z-20 p-1.5 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/40 text-amber-400 shadow-md">
+            <Star className="w-3.5 h-3.5 fill-amber-400" />
           </div>
         )}
 
@@ -138,14 +145,14 @@ export function MediaCard({ item, onPlayVideo, onViewPhoto, isHighlighted = fals
         </div>
 
         {/* Metadata Footer */}
-        <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1 border-t border-neutral-800/60 font-mono">
-          <span className="flex items-center gap-1">
-            <Calendar className="w-3 h-3 text-neutral-400" />
-            {formatRelativeTime(item.date)}
+        <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1.5 border-t border-neutral-800/60 font-mono gap-2">
+          <span className="flex items-center gap-1.5 min-w-0" title={formatFullDate(item.date)}>
+            <Calendar className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />
+            <span className="text-[10px] sm:text-[11px] text-neutral-300 truncate">{formatFullDate(item.date)}</span>
           </span>
 
           {item.views_count > 0 && (
-            <span className="flex items-center gap-1 text-neutral-400">
+            <span className="flex items-center gap-1 text-neutral-400 flex-shrink-0">
               <Eye className="w-3 h-3 text-neutral-400" />
               {item.views_count}
             </span>

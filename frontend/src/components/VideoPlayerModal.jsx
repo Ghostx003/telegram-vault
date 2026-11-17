@@ -23,7 +23,8 @@ import {
   FastForward,
   Rewind,
   Smartphone,
-  Maximize2
+  Maximize2,
+  Star
 } from 'lucide-react';
 import { api } from '../api/client';
 import { formatDuration, formatDate } from '../utils/formatters';
@@ -63,6 +64,22 @@ export function VideoPlayerModal({
   const [swipeSeek, setSwipeSeek] = useState({ active: false, delta: 0, targetTime: 0 });
   const [swipeVertical, setSwipeVertical] = useState({ active: false, dy: 0 });
   const [feedbackOverlay, setFeedbackOverlay] = useState(null); // '2x' | 'fullscreen' | null
+  const [isStarred, setIsStarred] = useState(Boolean(video?.is_starred));
+
+  useEffect(() => {
+    setIsStarred(Boolean(video?.is_starred));
+  }, [video?.telegram_message_id, video?.is_starred]);
+
+  const handleToggleStar = async () => {
+    try {
+      const next = !isStarred;
+      setIsStarred(next);
+      if (video) video.is_starred = next ? 1 : 0;
+      await api.toggleStar(video.telegram_message_id);
+    } catch (e) {
+      console.warn('Star toggle error:', e);
+    }
+  };
 
   // Gesture Tracking Refs
   const longPressTimerRef = useRef(null);
@@ -498,6 +515,19 @@ export function VideoPlayerModal({
 
             {/* Quick Actions */}
             <div className="flex items-center gap-2">
+              {/* Star / Favorite Button */}
+              <button
+                onClick={handleToggleStar}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                  isStarred
+                    ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/40'
+                    : 'bg-neutral-900/80 hover:bg-neutral-800 border-neutral-700/80 text-neutral-300 hover:text-white'
+                }`}
+                title={isStarred ? "Remove from Starred" : "Star this Video (Save to Starred Media)"}
+              >
+                <Star className={`w-4 h-4 ${isStarred ? 'fill-amber-400 text-amber-400' : 'text-neutral-400'}`} />
+                <span className="hidden sm:inline">{isStarred ? 'Starred' : 'Star'}</span>
+              </button>
               {/* Notch Coverage Toggle Button (for Phone Fullscreen) */}
               {isFullscreen && (
                 <button

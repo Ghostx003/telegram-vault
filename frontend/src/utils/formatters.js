@@ -21,6 +21,18 @@ export function formatDate(timestamp) {
   });
 }
 
+export function formatFullDate(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp * 1000);
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export function formatRelativeTime(timestamp) {
   if (!timestamp) return '';
   const now = Math.floor(Date.now() / 1000);

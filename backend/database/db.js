@@ -122,6 +122,19 @@ try {
   console.warn('Channel migration note:', err.message);
 }
 
+// 4. Migration: Ensure media table has is_starred column
+try {
+  const mediaCols = db.prepare("PRAGMA table_info('media')").all();
+  const hasStarred = mediaCols.some(c => c.name === 'is_starred');
+  if (!hasStarred) {
+    console.log('[DB Migration] Adding is_starred column to media table...');
+    db.exec('ALTER TABLE media ADD COLUMN is_starred INTEGER DEFAULT 0;');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_media_starred ON media(is_starred);');
+  }
+} catch (e) {
+  console.warn('[DB Migration] is_starred check:', e.message);
+}
+
 const dbHelper = {
   raw: db,
 
@@ -238,6 +251,20 @@ const dbHelper = {
       }
     }
     return { success: true };
+  },
+
+  // Star / Favorite Media Helpers
+  toggleStar(messageId) {
+    const item = this.get('SELECT is_starred FROM media WHERE telegram_message_id = ? LIMIT 1', [messageId]);
+    if (!item) return null;
+    const nextState = item.is_starred ? 0 : 1;
+    this.run('UPDATE media SET is_starred = ? WHERE telegram_message_id = ?', [nextState, messageId]);
+    return Boolean(nextState);
+  },
+
+  isStarred(messageId) {
+    const item = this.get('SELECT is_starred FROM media WHERE telegram_message_id = ? LIMIT 1', [messageId]);
+    return Boolean(item?.is_starred);
   }
 };
 

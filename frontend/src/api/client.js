@@ -111,6 +111,7 @@ export const api = {
   getMediaStatus: (id) => fetchJson(`/media/${id}/status`),
   recordView: (id) => fetchJson(`/media/${id}/view`, { method: 'POST' }),
   cleanupMedia: (id) => fetchJson(`/media/${id}/cleanup`, { method: 'POST' }),
+  toggleStar: (id) => fetchJson(`/media/${id}/star`, { method: 'POST' }),
 
   // Cache Management
   clearCache: (category = 'all') => fetchJson('/media/cache/clear', {

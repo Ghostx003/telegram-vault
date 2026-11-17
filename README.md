@@ -77,11 +77,29 @@ Both scripts:
 - When opening a photo via **Surprise Me** / **Random Photo**, clicking **Next** (`ChevronRight`), pressing `Right Arrow` / `N` / `Space`, or scrolling down automatically draws a **new random photo** from the pool.
 - Built-in session history stack lets you press **Previous** to go back to previously viewed random photos.
 
-### 4. Multi-Channel Switching
+### 5. Advanced Duration & Date Filtering
+- **Duration Filters**:
+  - Filter by **Longer than (>)** or **Shorter than (<)**.
+  - Quick presets for **10 min**, **20 min**, **30 min**, or type any **Custom minutes**.
+- **Date Presets & Custom XYZ Days**:
+  - Quick filters for **Last 7 Days**, **Last 30 Days**, **Last 3 Months (90d)**, **Last 6 Months (180d)**, and **Last 1 Year (365d)**.
+  - **Custom Days**: Enter any number of days (e.g. last 45 days, last 120 days).
+- **Full Date Display**: Cards show full dates (`MMM D, YYYY, h:mm A`) for precise timeline tracking.
+
+### 6. Starred Favorites & Dedicated Starred Media Section
+- **⭐ 1-Tap Star Favorites**: Star any video in the player or photo in the lightbox to save it.
+- **Dedicated Starred Section**: Accessible from top navbar on desktop or bottom bar on mobile.
+- **Segmented Starred Toggle**: Switch between `[ 🎬 Starred Videos ]` and `[ 📸 Starred Photos ]`.
+- **Golden Star Indicators**: Favorited media displays a golden badge on gallery cards.
+
+### 7. Automatic Infinite Scrolling
+- Automatically loads the next batch of media smoothly as you scroll down using `IntersectionObserver`. No manual clicking required.
+
+### 8. Multi-Channel Switching
 - Connect multiple private and public channels via invite links (`https://t.me/+...`) or channel IDs (`-100...`).
 - Switch active channel libraries on the fly without re-authenticating or re-syncing.
 
-### 5. HTTP 206 Partial Streaming Engine
+### 9. HTTP 206 Partial Streaming Engine
 - Fast seeking, scrubbing, and instant video starts using partial content chunks.
 - Smart on-disk cache management with 1-click cleanup options.
 

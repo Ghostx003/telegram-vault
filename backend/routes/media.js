@@ -34,6 +34,20 @@ router.get('/:id/status', (req, res) => {
   }
 });
 
+// POST /api/media/:id/star (Toggle Star / Favorite)
+router.post('/:id/star', (req, res) => {
+  try {
+    const messageId = parseInt(req.params.id, 10);
+    const isStarred = db.toggleStar(messageId);
+    if (isStarred === null) {
+      return res.status(404).json({ success: false, error: 'Media not found' });
+    }
+    res.json({ success: true, is_starred: isStarred });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET /api/media/:id (metadata)
 router.get('/:id', (req, res) => {
   try {

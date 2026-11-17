@@ -13,7 +13,8 @@ import {
   Sparkles,
   Info,
   Shuffle,
-  MousePointer
+  MousePointer,
+  Star
 } from 'lucide-react';
 import { api } from '../api/client';
 import { formatDate } from '../utils/formatters';
@@ -30,6 +31,22 @@ export function PhotoLightboxModal({
   const [zoom, setZoom] = useState(1);
   const [captionExpanded, setCaptionExpanded] = useState(false);
   const [scrollHintVisible, setScrollHintVisible] = useState(true);
+  const [isStarred, setIsStarred] = useState(Boolean(photo?.is_starred));
+
+  useEffect(() => {
+    setIsStarred(Boolean(photo?.is_starred));
+  }, [photo?.telegram_message_id, photo?.is_starred]);
+
+  const handleToggleStar = async () => {
+    try {
+      const next = !isStarred;
+      setIsStarred(next);
+      if (photo) photo.is_starred = next ? 1 : 0;
+      await api.toggleStar(photo.telegram_message_id);
+    } catch (e) {
+      console.warn('Star toggle error:', e);
+    }
+  };
   
   const lastWheelTime = useRef(0);
   const touchStartY = useRef(0);
@@ -169,6 +186,20 @@ export function PhotoLightboxModal({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
+          
+          {/* Star / Favorite Button */}
+          <button
+            onClick={handleToggleStar}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+              isStarred
+                ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/40'
+                : 'bg-neutral-900/90 border-neutral-800 text-neutral-300 hover:text-white'
+            }`}
+            title={isStarred ? "Remove from Starred" : "Star this Photo (Save to Starred Media)"}
+          >
+            <Star className={`w-3.5 h-3.5 ${isStarred ? 'fill-amber-400 text-amber-400' : 'text-neutral-400'}`} />
+            <span className="hidden sm:inline">{isStarred ? 'Starred' : 'Star'}</span>
+          </button>
           
           {/* Mode Toggle Pill (Random Mode vs Sequential Mode) */}
           {onToggleRandomMode && (

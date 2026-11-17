@@ -14,7 +14,8 @@ import {
   Radio, 
   ChevronDown, 
   Trash2,
-  Sparkles
+  Sparkles,
+  Star
 } from 'lucide-react';
 
 export function Navbar({ 
@@ -179,6 +180,19 @@ export function Navbar({
             <Clock className={`w-4 h-4 ${activeTab === 'recent' ? 'text-rose-400' : 'text-neutral-400'}`} />
             <span>Recent</span>
           </button>
+
+          {/* Starred Media */}
+          <button
+            onClick={() => setActiveTab('starred')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
+              activeTab === 'starred'
+                ? 'bg-neutral-800 text-amber-300 shadow-sm'
+                : 'text-neutral-400 hover:text-neutral-100 hover:bg-neutral-900/80'
+            }`}
+          >
+            <Star className={`w-4 h-4 ${activeTab === 'starred' ? 'text-amber-400 fill-amber-400' : 'text-neutral-400'}`} />
+            <span>Starred</span>
+          </button>
         </nav>
 
         {/* Right Action Controls */}
@@ -328,6 +342,16 @@ export function Navbar({
         >
           <Clock className="w-4 h-4" />
           <span>Recent</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('starred')}
+          className={`flex flex-col items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all ${
+            activeTab === 'starred' ? 'text-amber-400' : 'text-neutral-400'
+          }`}
+        >
+          <Star className={`w-4 h-4 ${activeTab === 'starred' ? 'fill-amber-400' : ''}`} />
+          <span>Starred</span>
         </button>
       </div>
     </header>

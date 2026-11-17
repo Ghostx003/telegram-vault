@@ -12,6 +12,7 @@ import { Videos } from './pages/Videos';
 import { Photos } from './pages/Photos';
 import { RandomHub } from './pages/RandomHub';
 import { RecentlyAdded } from './pages/RecentlyAdded';
+import { StarredMedia } from './pages/StarredMedia';
 
 import { useTelegramAuth } from './hooks/useTelegramAuth';
 import { useSync } from './hooks/useSync';
@@ -384,6 +385,13 @@ export function App() {
 
         {activeTab === 'recent' && (
           <RecentlyAdded
+            onPlayVideo={handlePlayVideo}
+            onViewPhoto={(photo) => handleViewPhoto(photo, 'sequential')}
+          />
+        )}
+
+        {activeTab === 'starred' && (
+          <StarredMedia
             onPlayVideo={handlePlayVideo}
             onViewPhoto={(photo) => handleViewPhoto(photo, 'sequential')}
           />

@@ -45,6 +45,11 @@ router.get('/', (req, res) => {
       params.push(endDate);
     }
 
+    // Starred filter
+    if (req.query.starred === 'true' || req.query.starred === '1') {
+      whereClauses.push('is_starred = 1');
+    }
+
     const whereSql = `WHERE ${whereClauses.join(' AND ')}`;
 
     let orderBy = 'date DESC';
