@@ -113,25 +113,25 @@ export function Photos({
     <div className="space-y-6 animate-fadeIn pb-16">
       
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-lg shadow-amber-950/20">
-            <ImageIcon className="w-6 h-6" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-lg shadow-amber-950/20">
+            <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">All Photos</h1>
-            <p className="text-xs text-neutral-400">Large showcase grid presenting full uncropped photographs</p>
+            <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight">All Photos</h1>
+            <p className="text-[11px] sm:text-xs text-neutral-400">High-resolution uncropped photographs</p>
           </div>
         </div>
 
         {/* Surprise Me Button */}
         <button
           onClick={onOpenRandomPhoto}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs shadow-lg shadow-amber-950/50 transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs shadow-lg shadow-amber-950/50 transition-all hover:scale-105 active:scale-95"
           title="Open a surprise random photo in lightbox"
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Surprise Me</span>
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Surprise</span>
         </button>
       </div>
 
@@ -158,9 +158,9 @@ export function Photos({
         </div>
       )}
 
-      {/* Photos Grid: 4 PHOTOS IN LARGE GRID SHOWING FULL PHOTO */}
+      {/* Photos Grid: 2 COLUMNS ON MOBILE, 3-4 ON DESKTOP */}
       {photos.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-4.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
           {photos.map((photo) => (
             <MediaCard
               key={photo.id}

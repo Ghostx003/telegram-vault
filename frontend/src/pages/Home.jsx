@@ -30,87 +30,87 @@ export function Home({
       />
 
       {/* Modern Quick Action Showcase */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         
         {/* Action 1: Surprise Video */}
         <div 
           onClick={onPlayRandomVideo}
-          className="group p-5 rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-rose-950/30 border border-neutral-800 hover:border-rose-500/50 cursor-pointer shadow-lg hover:shadow-rose-950/20 transition-all duration-300 hover:-translate-y-1"
+          className="group p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-rose-950/30 border border-neutral-800 hover:border-rose-500/50 cursor-pointer shadow-lg hover:shadow-rose-950/20 transition-all duration-300 hover:-translate-y-1"
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30 group-hover:scale-110 transition-transform">
-              <Sparkles className="w-5 h-5" />
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30 group-hover:scale-110 transition-transform">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <span className="text-[10px] font-mono text-rose-400 uppercase font-semibold">Surprise Me</span>
+            <span className="text-[9px] sm:text-[10px] font-mono text-rose-400 uppercase font-semibold">Surprise</span>
           </div>
-          <h3 className="text-sm font-bold text-white group-hover:text-rose-400 transition-colors">
-            Surprise Me: Video
+          <h3 className="text-xs sm:text-sm font-bold text-white group-hover:text-rose-400 transition-colors">
+            Random Video
           </h3>
-          <p className="text-xs text-neutral-400 mt-1">
-            Instantly launch a surprise random video from the vault.
+          <p className="text-[10px] sm:text-xs text-neutral-400 mt-0.5 sm:mt-1 line-clamp-2">
+            Instantly launch a surprise video from the vault.
           </p>
         </div>
 
         {/* Action 2: Surprise Photo */}
         <div 
           onClick={onOpenRandomPhoto}
-          className="group p-5 rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-amber-950/30 border border-neutral-800 hover:border-amber-500/50 cursor-pointer shadow-lg hover:shadow-amber-950/20 transition-all duration-300 hover:-translate-y-1"
+          className="group p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-amber-950/30 border border-neutral-800 hover:border-amber-500/50 cursor-pointer shadow-lg hover:shadow-amber-950/20 transition-all duration-300 hover:-translate-y-1"
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 group-hover:scale-110 transition-transform">
-              <Dices className="w-5 h-5" />
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30 group-hover:scale-110 transition-transform">
+              <Dices className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <span className="text-[10px] font-mono text-amber-400 uppercase font-semibold">Surprise Me</span>
+            <span className="text-[9px] sm:text-[10px] font-mono text-amber-400 uppercase font-semibold">Surprise</span>
           </div>
-          <h3 className="text-sm font-bold text-white group-hover:text-amber-400 transition-colors">
-            Surprise Me: Photo
+          <h3 className="text-xs sm:text-sm font-bold text-white group-hover:text-amber-400 transition-colors">
+            Random Photo
           </h3>
-          <p className="text-xs text-neutral-400 mt-1">
-            Discover a high-resolution photo with scroll cycling.
+          <p className="text-[10px] sm:text-xs text-neutral-400 mt-0.5 sm:mt-1 line-clamp-2">
+            Discover a high-res photo with swipe cycling.
           </p>
         </div>
 
         {/* Action 3: Shuffle Grid */}
         <div 
           onClick={() => setActiveTab('random')}
-          className="group p-5 rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-indigo-950/30 border border-neutral-800 hover:border-indigo-500/50 cursor-pointer shadow-lg hover:shadow-indigo-950/20 transition-all duration-300 hover:-translate-y-1"
+          className="group p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-900 to-indigo-950/30 border border-neutral-800 hover:border-indigo-500/50 cursor-pointer shadow-lg hover:shadow-indigo-950/20 transition-all duration-300 hover:-translate-y-1"
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30 group-hover:scale-110 transition-transform">
-              <Dices className="w-5 h-5" />
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30 group-hover:scale-110 transition-transform">
+              <Dices className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <span className="text-[10px] font-mono text-indigo-400 uppercase font-semibold">Hub</span>
+            <span className="text-[9px] sm:text-[10px] font-mono text-indigo-400 uppercase font-semibold">Shuffle</span>
           </div>
-          <h3 className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">
+          <h3 className="text-xs sm:text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">
             Shuffle Experience
           </h3>
-          <p className="text-xs text-neutral-400 mt-1">
-            Watch with non-repeating shuffle cycle sessions.
+          <p className="text-[10px] sm:text-xs text-neutral-400 mt-0.5 sm:mt-1 line-clamp-2">
+            Non-repeating shuffle cycle sessions.
           </p>
         </div>
 
         {/* Action 4: Sync Channel */}
         <div 
           onClick={() => onStartSync(false)}
-          className={`group p-5 rounded-2xl bg-gradient-to-br from-neutral-900 to-neutral-900/60 border border-neutral-800 hover:border-neutral-700 cursor-pointer shadow-lg transition-all duration-300 hover:-translate-y-1 ${
+          className={`group p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-neutral-900 to-neutral-900/60 border border-neutral-800 hover:border-neutral-700 cursor-pointer shadow-lg transition-all duration-300 hover:-translate-y-1 ${
             isSyncing ? 'border-rose-500/40 pointer-events-none' : ''
           }`}
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className={`w-10 h-10 rounded-xl bg-neutral-800 text-neutral-300 flex items-center justify-center border border-neutral-700 ${
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-neutral-800 text-neutral-300 flex items-center justify-center border border-neutral-700 ${
               isSyncing ? 'text-rose-400' : 'group-hover:scale-110'
             } transition-transform`}>
-              <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin text-rose-400' : ''}`} />
+              <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${isSyncing ? 'animate-spin text-rose-400' : ''}`} />
             </div>
-            <span className="text-[10px] font-mono text-neutral-400 uppercase">
+            <span className="text-[9px] sm:text-[10px] font-mono text-neutral-400 uppercase">
               {isSyncing ? 'Syncing...' : 'Telegram'}
             </span>
           </div>
-          <h3 className="text-sm font-bold text-white group-hover:text-neutral-200 transition-colors">
-            {isSyncing ? 'Synchronizing...' : 'Refresh Library'}
+          <h3 className="text-xs sm:text-sm font-bold text-white group-hover:text-neutral-200 transition-colors">
+            {isSyncing ? 'Syncing...' : 'Refresh'}
           </h3>
-          <p className="text-xs text-neutral-400 mt-1">
-            Fetch newly published media from your channel.
+          <p className="text-[10px] sm:text-xs text-neutral-400 mt-0.5 sm:mt-1 line-clamp-2">
+            Fetch newly published channel media.
           </p>
         </div>
 
@@ -184,7 +184,7 @@ export function Home({
           </div>
 
           {recentVideos && recentVideos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5">
               {recentVideos.slice(0, 8).map((video) => (
                 <MediaCard
                   key={video.id}
@@ -195,14 +195,14 @@ export function Home({
               ))}
             </div>
           ) : (
-            <div className="p-12 text-center rounded-2xl bg-neutral-900/40 border border-neutral-800 text-neutral-400 text-xs">
+            <div className="p-8 sm:p-12 text-center rounded-2xl bg-neutral-900/40 border border-neutral-800 text-neutral-400 text-xs">
               No videos synchronized yet. Click "Refresh Library" to pull media from your Telegram channel.
             </div>
           )}
         </section>
       )}
 
-      {/* Section: Recently Added Photos - 4 PHOTOS IN LARGE GRID SHOWING FULL PHOTO */}
+      {/* Section: Recently Added Photos */}
       {(activeMediaFilter === 'all' || activeMediaFilter === 'photos') && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -211,8 +211,8 @@ export function Home({
                 <ImageIcon className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">Latest Photos (Full View)</h3>
-                <p className="text-xs text-neutral-400">High-resolution uncropped photographs (4 across)</p>
+                <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">Latest Photos</h3>
+                <p className="text-[11px] sm:text-xs text-neutral-400">High-resolution uncropped photographs</p>
               </div>
             </div>
 
@@ -226,7 +226,7 @@ export function Home({
           </div>
 
           {recentPhotos && recentPhotos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-4.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {recentPhotos.slice(0, 8).map((photo) => (
                 <MediaCard
                   key={photo.id}

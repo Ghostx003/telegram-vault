@@ -9,11 +9,20 @@ const config = require('./config');
 const clientModule = require('./telegram/client');
 
 // Global process error handlers to prevent crashes on socket drops or aborted client requests
-process.on('uncaughtException', (err) => {
-  console.error('[Process] Uncaught Exception:', err.message);
+process.on('uncaughtException', (err, origin) => {
+  console.error('[Process] Uncaught Exception:', err.stack || err.message, 'Origin:', origin);
 });
-process.on('unhandledRejection', (reason) => {
-  console.error('[Process] Unhandled Rejection:', reason);
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Process] Unhandled Rejection reason:', reason);
+});
+process.on('exit', (code) => {
+  console.log(`[Process] Node exiting with code: ${code}`);
+});
+process.on('SIGINT', () => {
+  console.log('[Process] Received SIGINT');
+});
+process.on('SIGTERM', () => {
+  console.log('[Process] Received SIGTERM');
 });
 
 // Import routes
@@ -98,38 +107,55 @@ function getTailscaleIp() {
   }
 }
 
-let server = null;
-if (require.main === module) {
-  server = app.listen(config.port, '0.0.0.0', async () => {
-    const lanIp = getLocalLanIp();
-    const tailscaleIp = getTailscaleIp();
+function startServer(port = process.env.PORT || config.port) {
+  return new Promise((resolve, reject) => {
+    const s = app.listen(port, '0.0.0.0', async () => {
+      const lanIp = getLocalLanIp();
+      const tailscaleIp = getTailscaleIp();
 
-    console.log(`\n=============================================================`);
-    console.log(` 🚀  TELEGRAM MEDIA VAULT - STREAMING SERVER`);
-    console.log(`=============================================================`);
-    console.log(` 💻 Localhost:    http://localhost:${config.port}`);
-    console.log(` 📶 Same Wi-Fi:   http://${lanIp}:${config.port} (Open on Phone/Tablet)`);
-    if (tailscaleIp) {
-      console.log(` 🌐 Tailscale:    http://${tailscaleIp}:${config.port} (Access Anywhere on Phone)`);
-    } else {
-      console.log(` 🌐 Tailscale:    Not detected (Run Tailscale for remote access)`);
-    }
-    console.log(` 📡 Channel ID:   ${config.telegram.channelId}`);
-    console.log(`=============================================================\n`);
-
-    // Attempt background connection if session already saved
-    try {
-      const isAuth = await clientModule.isAuthorized();
-      if (isAuth) {
-        const me = await clientModule.getMe();
-        console.log(`[Telegram] Authenticated as ${me?.firstName || 'User'} (@${me?.username || 'no-username'})`);
+      console.log(`\n=============================================================`);
+      console.log(` 🚀  TELEGRAM MEDIA VAULT - STREAMING SERVER`);
+      console.log(`=============================================================`);
+      console.log(` 💻 Localhost:    http://localhost:${port}`);
+      console.log(` 📶 Same Wi-Fi:   http://${lanIp}:${port} (Open on Phone/Tablet)`);
+      if (tailscaleIp) {
+        console.log(` 🌐 Tailscale:    http://${tailscaleIp}:${port} (Access Anywhere on Phone)`);
       } else {
-        console.log('[Telegram] No authenticated session found. Login required via web UI or API.');
+        console.log(` 🌐 Tailscale:    Not detected (Run Tailscale for remote access)`);
       }
-    } catch (err) {
-      console.warn('[Telegram] Startup check note:', err.message);
-    }
+      console.log(` 📡 Channel ID:   ${config.telegram.channelId}`);
+      console.log(`=============================================================\n`);
+
+      // Attempt background connection if session already saved
+      try {
+        const isAuth = await clientModule.isAuthorized();
+        if (isAuth) {
+          const me = await clientModule.getMe();
+          console.log(`[Telegram] Authenticated as ${me?.firstName || 'User'} (@${me?.username || 'no-username'})`);
+        } else {
+          console.log('[Telegram] No authenticated session found. Login required via web UI or API.');
+        }
+      } catch (err) {
+        console.warn('[Telegram] Startup check note:', err.message);
+      }
+
+      resolve(s);
+    });
+
+    s.on('error', (err) => {
+      reject(err);
+    });
   });
 }
 
-module.exports = { app, server };
+let server = null;
+if (require.main === module) {
+  startServer().then((s) => {
+    server = s;
+  }).catch((err) => {
+    console.error('Server startup error:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { app, server, startServer, getLocalLanIp, getTailscaleIp };

@@ -60,12 +60,17 @@ function setupDesktopShortcut() {
 setlocal
 title Telegram Media Vault
 cd /d "${projectDir}"
+
+echo ===================================================
+echo   Starting Telegram Media Vault...
+echo ===================================================
 node launcher.js
-if %errorlevel% neq 0 (
-  echo.
-  echo Server exited with code %errorlevel%.
-  pause
-)
+
+echo.
+echo ===================================================
+echo   Server has stopped.
+echo ===================================================
+pause
 `;
     fs.writeFileSync(desktopPath, batContent, 'utf8');
     console.log(`[Setup] Desktop shortcut placed at: ${desktopPath}`);
@@ -128,8 +133,12 @@ Starting server...
   // Set environment port for backend
   process.env.PORT = String(port);
 
-  // Require backend server directly in this process
-  require('./backend/server');
+  // Require backend and start listening
+  const { startServer } = require('./backend/server');
+  await startServer(port);
+
+  console.log(`[Status] Streaming server is active and listening on port ${port}.`);
+  console.log(`[Tip] Keep this terminal window open. To stop the server, press Ctrl+C.\n`);
 
   // Open browser locally after 1.5s
   setTimeout(() => {
@@ -138,6 +147,16 @@ Starting server...
       execSync(startCmd);
     } catch (e) {}
   }, 1500);
+
+  // Handle graceful stop
+  process.on('SIGINT', () => {
+    console.log('\nShutting down Telegram Media Vault gracefully...');
+    process.exit(0);
+  });
+  process.on('SIGTERM', () => {
+    console.log('\nShutting down Telegram Media Vault gracefully...');
+    process.exit(0);
+  });
 }
 
 main().catch(err => {

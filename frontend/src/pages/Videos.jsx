@@ -128,24 +128,24 @@ export function Videos({
     <div className="space-y-6 animate-fadeIn pb-16">
       
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-            <Film className="w-6 h-6" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <Film className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">All Videos</h1>
-            <p className="text-xs text-neutral-400">Stream and discover videos with duration and date filtering</p>
+            <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight">All Videos</h1>
+            <p className="text-[11px] sm:text-xs text-neutral-400">Stream and discover channel videos</p>
           </div>
         </div>
 
         <button
           onClick={onPlayRandomVideo}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-xs shadow-lg shadow-rose-950/50 transition-all hover:scale-105 active:scale-95"
+          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-xs shadow-lg shadow-rose-950/50 transition-all hover:scale-105 active:scale-95"
           title="Play a surprise random video"
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Surprise Me</span>
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Surprise</span>
         </button>
       </div>
 
@@ -178,7 +178,7 @@ export function Videos({
 
       {/* Video Grid */}
       {videos.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5">
           {videos.map((video) => (
             <MediaCard
               key={video.id}

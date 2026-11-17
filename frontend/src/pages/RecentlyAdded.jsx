@@ -102,7 +102,7 @@ export function RecentlyAdded({ onPlayVideo, onViewPhoto }) {
 
       {/* Media Grid */}
       {items.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5">
           {items.map((item) => (
             <MediaCard
               key={`${item.media_type}_${item.id}`}
